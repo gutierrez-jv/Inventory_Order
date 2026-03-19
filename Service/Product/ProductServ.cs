@@ -1,12 +1,62 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Inventory_Order.Models.Database;
+using Inventory_Order.Repository.ProductRepository;
+using Inventory_Order.Service.Customer;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Order.Service.Product
 {
-    public class ProductServ : Controller
+    public class ProductServ : IProductServ
     {
-        public IActionResult Index()
+        private readonly IProductRepo _productRepo;
+        public ProductServ(ProductRepo productRepo)
         {
-            return View();
+            _productRepo = productRepo;
+        }
+        public bool CreateProduct(ProductTb product)
+        {
+            if (product == null) return false;
+            if (string.IsNullOrWhiteSpace(product.Name)) return false;
+            if (string.IsNullOrWhiteSpace(product.Type)) return false;
+            if (string.IsNullOrWhiteSpace(product.Barcode)) return false;
+            if (product.Price <= 0) return false;
+            if (product.Quantity < 0) return false;
+
+            var existingBarcode = _productRepo.GetProductByBarcode(product.Barcode);
+            if (existingBarcode != null) return false;
+
+            var existingId = _productRepo.GetProductById(product.ProductsId);
+            if (existingId != null) return false;
+
+            product.Stock = product.Quantity > 0;
+
+            _productRepo.AddProduct(product);
+            return true;
+        }
+
+        public bool DeleteProduct(int id)
+        {
+            if (id <= 0) return false;
+
+            var existing = _productRepo.GetProductById(id);
+            if (existing == null) return false;
+
+            _productRepo.DeleteProduct(id);
+            return true;
+        }
+
+        public IEnumerable<ProductTb> GetAllProducts()
+        {
+            return _productRepo.GetAllProducts().Result ?? Enumerable.Empty<ProductTb>();
+        }
+
+        public ProductTb? GetProductById(int id)
+        {
+            
+        }
+
+        public bool UpdateProduct(ProductTb product)
+        {
+            throw new NotImplementedException();
         }
     }
 }

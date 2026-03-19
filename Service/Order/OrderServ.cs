@@ -1,12 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Inventory_Order.Repository.OrderRepository;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Order.Service.Order
 {
-    public class OrderServ : Controller
+    public class OrderServ : IOrderServ
     {
-        public IActionResult Index()
+        private readonly IOrderRepo _orderRepo;
+        public OrderServ(IOrderRepo orderRepo)
         {
-            return View();
+            _orderRepo = orderRepo;
         }
-    }
+
+
+    }   
 }
