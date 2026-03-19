@@ -15,10 +15,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Service\Customer\" />
-    <Folder Include="Service\Order\" />
-    <Folder Include="Service\Product\" />
-  </ItemGroup>
-
 </Project>
