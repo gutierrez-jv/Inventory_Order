@@ -1,4 +1,5 @@
 ﻿using Inventory_Order.Models.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 
@@ -15,6 +16,7 @@ namespace Inventory_Order.Repository.ProductRepository
         public void AddProduct(ProductTb product)
         {
             _context.ProductTbs.Add(product);
+            _context.SaveChanges();
         }
 
         public void DeleteProduct(int id)
@@ -24,25 +26,25 @@ namespace Inventory_Order.Repository.ProductRepository
             _context.SaveChanges();
         }
 
-        public List<ProductTb> GetAllProducts()
+        public async Task<List<ProductTb>> GetAllProducts()
         {
-            return _context.ProductTbs.ToList();
+            return await _context.ProductTbs.ToListAsync();
         }
 
-        public ProductTb? GetProductByBarcode(string barcode)
+        public async Task<ProductTb?> GetProductByBarcode(string barcode)
         {
-            _context.ProductTbs.Where(p => p.Barcode == barcode).FirstOrDefault();
-            return null;
+            return await _context.ProductTbs.FirstOrDefaultAsync(p => p.Barcode == barcode);
         }
 
-        public ProductTb? GetProductById(int id)
+        public async Task<ProductTb?> GetProductById(int id)
         {
-            _context.ProductTbs.Where(p => p.ProductsId == id).FirstOrDefault();
-            return null;
+            return await _context.ProductTbs.FindAsync(id);
         }
+
         public void UpdateProduct(ProductTb product)
         {
             _context.ProductTbs.Update(product);
+            _context.SaveChanges();
         }
     }
 }
