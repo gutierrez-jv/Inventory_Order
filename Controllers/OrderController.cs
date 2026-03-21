@@ -1,7 +1,10 @@
-﻿using Inventory_Order.Service.Order;
+using Inventory_Order.Service.Customer;
+using Inventory_Order.Service.Order;
+using Inventory_Order.Service.Product;
 using Inventory_Order.ViewModels.Order;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Inventory_Order.Controllers
 {
@@ -9,10 +12,17 @@ namespace Inventory_Order.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderServ _orderServ;
+        private readonly ICustomerServ _customerServ;
+        private readonly IProductServ _productServ;
 
-        public OrderController(IOrderServ orderServ)
+        public OrderController(
+            IOrderServ orderServ,
+            ICustomerServ customerServ,
+            IProductServ productServ)
         {
             _orderServ = orderServ;
+            _customerServ = customerServ;
+            _productServ = productServ;
         }
 
         private int? GetCustomerId()
@@ -25,7 +35,30 @@ namespace Inventory_Order.Controllers
             return null;
         }
 
-        // ADMIN: View all orders
+        private async Task LoadOrderFormLookupsAsync()
+        {
+            var customers = await _customerServ.GetAllCustomersAsync();
+            var products = await _productServ.GetAllProductsAsync();
+
+            ViewBag.Customers = customers
+                .Where(c => c.IsActive)
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CustomerId.ToString(),
+                    Text = $"{c.FirstName} {c.LastName} (#{c.CustomerId})"
+                })
+                .ToList();
+
+            ViewBag.Products = products
+                .Where(p => p.Quantity > 0)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.ProductsId.ToString(),
+                    Text = $"{p.Name} ({p.Barcode}) - {p.Price:C}"
+                })
+                .ToList();
+        }
+
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
@@ -33,7 +66,6 @@ namespace Inventory_Order.Controllers
             return View(orders);
         }
 
-        // ADMIN: View one order
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Details(int id)
         {
@@ -45,7 +77,52 @@ namespace Inventory_Order.Controllers
             return View(order);
         }
 
-        // ADMIN: Mark completed
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var order = await _orderServ.GetOrderByIdAsync(id);
+
+            if (order == null)
+                return NotFound();
+
+            await LoadOrderFormLookupsAsync();
+
+            var model = new UpdateOrderRequestViewModel
+            {
+                OrdersId = order.OrdersId,
+                CustomersId = order.CustomersId,
+                TotalAmount = order.TotalAmount,
+                OrderStatus = order.OrderStatus,
+                DateCreated = order.DateCreated
+            };
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(UpdateOrderRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                await LoadOrderFormLookupsAsync();
+                return View(model);
+            }
+
+            var success = await _orderServ.UpdateOrderAsync(model);
+
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update order.");
+                await LoadOrderFormLookupsAsync();
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -55,7 +132,6 @@ namespace Inventory_Order.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ADMIN: Cancel
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -65,7 +141,6 @@ namespace Inventory_Order.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // CUSTOMER: View own orders
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> MyOrders()
         {
@@ -78,36 +153,46 @@ namespace Inventory_Order.Controllers
             return View(orders);
         }
 
-        // CUSTOMER: Create own order
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Admin,Customer")]
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            await LoadOrderFormLookupsAsync();
+            return View(new CreateOrderRequestViewModel());
         }
 
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Admin,Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateOrderRequestViewModel model)
         {
-            var customerId = GetCustomerId();
+            if (User.IsInRole("Customer"))
+            {
+                var customerId = GetCustomerId();
 
-            if (!customerId.HasValue)
-                return RedirectToAction("AccessDenied", "Account");
+                if (!customerId.HasValue)
+                    return RedirectToAction("AccessDenied", "Account");
 
-            model.CustomersId = customerId.Value;
+                model.CustomersId = customerId.Value;
+            }
 
             if (!ModelState.IsValid)
+            {
+                await LoadOrderFormLookupsAsync();
                 return View(model);
+            }
 
             var success = await _orderServ.CreateOrderAsync(model);
 
             if (!success)
             {
-                ModelState.AddModelError(string.Empty, "Unable to create order.");
+                ModelState.AddModelError(string.Empty, "Unable to create order. Please verify customer, stock, and quantities.");
+                await LoadOrderFormLookupsAsync();
                 return View(model);
             }
+
+            if (User.IsInRole("Admin"))
+                return RedirectToAction(nameof(Index));
 
             return RedirectToAction(nameof(MyOrders));
         }

@@ -25,8 +25,6 @@
                     <div class="brand">Inventor.<span>io</span></div>
 
                     <nav class="menu-links">
-                        <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active-link" : "")" asp-controller="Home" asp-action="Index">Home</a>
-
                         @if (isAdmin)
                         {
                             <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
