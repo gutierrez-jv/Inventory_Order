@@ -235,7 +235,7 @@ namespace Inventory_Order.Controllers
             return RedirectToAction(nameof(MyOrders));
         }
 
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Admin,Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MyOrderDelete(int id)
