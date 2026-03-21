@@ -25,6 +25,7 @@ namespace Inventory_Order.Service.Auth
                 {
                     Username = "admin",
                     Role = "Admin",
+                    FirstName = "Admin",
                     UserId = null,
                     CustomerId = null
                 };
@@ -45,7 +46,8 @@ namespace Inventory_Order.Service.Auth
                 UserId = user.UserId,
                 CustomerId = user.CustomerId,
                 Username = user.Username,
-                Role = user.Role
+                Role = user.Role,
+                FirstName = user.Customer != null ? user.Customer.FirstName : user.Username
             };
         }
 

@@ -83,7 +83,11 @@ namespace Inventory_Order.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _productServ.DeleteProductAsync(id);
+            var success = await _productServ.DeleteProductAsync(id);
+
+            if (!success)
+                TempData["ErrorMessage"] = "Unable to delete product. It may already be used in existing orders.";
+
             return RedirectToAction(nameof(Index));
         }
     }

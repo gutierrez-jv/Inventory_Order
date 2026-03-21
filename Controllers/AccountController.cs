@@ -49,7 +49,8 @@ namespace Inventory_Order.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, result.Username),
-                new Claim(ClaimTypes.Role, result.Role)
+                new Claim(ClaimTypes.Role, result.Role),
+                new Claim("FirstName", string.IsNullOrWhiteSpace(result.FirstName) ? result.Username : result.FirstName)
             };
 
             if (result.UserId.HasValue)

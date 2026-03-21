@@ -98,6 +98,10 @@ namespace Inventory_Order.Service.Product
             if (existingProduct == null)
                 return false;
 
+            var hasOrders = await _productRepo.HasOrderItemsAsync(id);
+            if (hasOrders)
+                return false;
+
             await _productRepo.DeleteProductAsync(id);
             return true;
         }

@@ -14,7 +14,7 @@
         var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
         var isAdmin = User?.IsInRole("Admin") ?? false;
         var isCustomer = User?.IsInRole("Customer") ?? false;
-        var initials = User?.Identity?.Name?.Substring(0, 1).ToUpperInvariant() ?? "?";
+        var displayName = isAdmin ? "Admin" : User?.FindFirst("FirstName")?.Value ?? User?.Identity?.Name ?? "User";
     }
 
     @if (isAuthenticated)
@@ -60,7 +60,7 @@
                         <div class="top-icons">
                             <span class="icon-dot"></span>
                             <span class="icon-dot"></span>
-                            <span class="avatar">@initials</span>
+                            <span class="avatar" title="@displayName">@displayName</span>
                         </div>
                     </header>
 

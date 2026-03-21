@@ -10,5 +10,6 @@ namespace Inventory_Order.Repository.ProductRepository
         Task AddProductAsync(ProductTb product);
         Task UpdateProductAsync(ProductTb product);
         Task DeleteProductAsync(int id);
+        Task<bool> HasOrderItemsAsync(int productId);
     }
 }

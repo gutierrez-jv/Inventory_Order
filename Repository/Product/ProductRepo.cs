@@ -65,5 +65,10 @@ namespace Inventory_Order.Repository.ProductRepository
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> HasOrderItemsAsync(int productId)
+        {
+            return await _context.OrderItemTbs.AnyAsync(i => i.ProductsId == productId);
+        }
     }
 }
