@@ -1,0 +1,42 @@
+@model Inventory_Order.Models.Database.OrderTb
+@{
+    ViewData["Title"] = "My Order Details";
+}
+
+<h1 class="page-title">My Order #@Model.OrdersId</h1>
+
+<div class="panel">
+    <div class="grid-2">
+        <div><strong>Status:</strong> @Model.OrderStatus</div>
+        <div><strong>Last Updated:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div>
+        <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div>
+        <div><strong>Total Items:</strong> @Model.OrderItemTbs.Count</div>
+    </div>
+
+    <h5 class="mt-4">Items</h5>
+    <div class="table-responsive">
+        <table class="table align-middle searchable-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Line Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItemTbs)
+                {
+                    <tr data-search-row>
+                        <td>@(item.Products != null ? item.Products.Name : "Product #" + item.ProductsId)</td>
+                        <td>@item.Quantity</td>
+                        <td>₱@item.UnitPrice.ToString("N2")</td>
+                        <td>₱@item.LineTotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <a asp-action="MyOrders" class="btn btn-outline-secondary">Back</a>
+</div>
