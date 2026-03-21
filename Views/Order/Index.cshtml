@@ -42,6 +42,10 @@
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
                             </form>
+                            <form asp-action="Delete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 }
