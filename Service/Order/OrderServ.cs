@@ -153,13 +153,37 @@ namespace Inventory_Order.Service.Order
             if (orderId <= 0)
                 return false;
 
-            var order = await _orderRepo.GetOrderByIdWithDetailsAsync(orderId);
-            if (order == null)
-                return false;
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            order.OrderStatus = "Cancelled";
-            await _orderRepo.UpdateOrderAsync(order);
-            return true;
+            try
+            {
+                var order = await _dbContext.OrderTbs
+                    .Include(o => o.OrderItemTbs)
+                    .FirstOrDefaultAsync(o => o.OrdersId == orderId);
+
+                if (order == null)
+                    return false;
+
+                if (!string.Equals(order.OrderStatus, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (var item in order.OrderItemTbs)
+                    {
+                        var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
+                        if (product != null)
+                            product.Quantity += item.Quantity;
+                    }
+                }
+
+                order.OrderStatus = "Cancelled";
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
 
         public async Task<bool> UpdateOrderAsync(UpdateOrderRequestViewModel request)
@@ -242,7 +266,6 @@ namespace Inventory_Order.Service.Order
                 order.CustomersId = request.CustomersId;
                 order.OrderStatus = AllowedStatuses.First(s => s.Equals(request.OrderStatus, StringComparison.OrdinalIgnoreCase));
                 order.TotalAmount = total;
-                order.DateCreated = DateTime.Now;
 
                 await _dbContext.OrderItemTbs.AddRangeAsync(newItems);
                 await _dbContext.SaveChangesAsync();
