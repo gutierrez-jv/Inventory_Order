@@ -1,0 +1,38 @@
+@model Inventory_Order.ViewModels.Order.OrderDetailsViewModel
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h2>Order Details</h2>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Order ID</dt>
+            <dd class="col-sm-8">@Model.OrdersId</dd>
+
+            <dt class="col-sm-4">Order Status</dt>
+            <dd class="col-sm-8">@Model.OrderStatus</dd>
+
+            <dt class="col-sm-4">Date Created</dt>
+            <dd class="col-sm-8">@Model.DateCreated</dd>
+
+            <dt class="col-sm-4">Customer</dt>
+            <dd class="col-sm-8">@Model.CustomerName (ID: @Model.CustomersId)</dd>
+
+            <dt class="col-sm-4">Product</dt>
+            <dd class="col-sm-8">@Model.ProductName (ID: @Model.ProductsId)</dd>
+
+            <dt class="col-sm-4">Quantity</dt>
+            <dd class="col-sm-8">@Model.Quantity</dd>
+
+            <dt class="col-sm-4">Total Amount</dt>
+            <dd class="col-sm-8">@Model.Amount</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.OrdersId" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</div>

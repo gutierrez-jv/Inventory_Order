@@ -1,0 +1,51 @@
+@model IEnumerable<Inventory_Order.Models.Database.ProductTb>
+@{
+    ViewData["Title"] = "Products";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Products</h2>
+    <a asp-action="Create" class="btn btn-success">Add Product</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-striped table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Product Code</th>
+            <th>Product Name</th>
+            <th>Type</th>
+            <th>Stock Quantity</th>
+            <th>Price per Item</th>
+            <th>In Stock</th>
+            <th style="width: 160px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Barcode</td>
+                <td>@item.Name</td>
+                <td>@item.Type</td>
+                <td>@item.Quantity</td>
+                <td>@item.Price</td>
+                <td>@(item.Stock ? "Yes" : "No")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ProductsId" class="btn btn-sm btn-primary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@item.ProductsId" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

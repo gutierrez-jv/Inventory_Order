@@ -8,7 +8,7 @@ namespace Inventory_Order.Service.Product
     public class ProductServ : IProductServ
     {
         private readonly IProductRepo _productRepo;
-        public ProductServ(ProductRepo productRepo)
+        public ProductServ(IProductRepo productRepo)
         {
             _productRepo = productRepo;
         }

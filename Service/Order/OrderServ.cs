@@ -41,7 +41,7 @@ namespace Inventory_Order.Service.Order
 
             await _orderRepo.AddOrder(order);
             await _productRepo.UpdateProduct(product);
-            return false;
+            return true;
         }
 
         public bool DeleteOrder(int id)
