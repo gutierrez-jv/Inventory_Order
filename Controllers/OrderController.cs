@@ -49,7 +49,7 @@ namespace Inventory_Order.Controllers
             return order;
         }
 
-        private async Task LoadOrderFormLookupsAsync()
+        private async Task LoadOrderFormLookupsAsync(bool includeOutOfStockProducts = false)
         {
             var customers = await _customerServ.GetAllCustomersAsync();
             var products = await _productServ.GetAllProductsAsync();
@@ -70,7 +70,7 @@ namespace Inventory_Order.Controllers
             var productItems = new List<SelectListItem>();
             foreach (var product in products)
             {
-                if (product.Quantity <= 0)
+                if (!includeOutOfStockProducts && product.Quantity <= 0)
                     continue;
 
                 productItems.Add(new SelectListItem
@@ -123,7 +123,7 @@ namespace Inventory_Order.Controllers
                 }).ToList()
             };
 
-            await LoadOrderFormLookupsAsync();
+            await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
             return View(model);
         }
 
@@ -134,7 +134,7 @@ namespace Inventory_Order.Controllers
         {
             if (!ModelState.IsValid)
             {
-                await LoadOrderFormLookupsAsync();
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
@@ -143,7 +143,7 @@ namespace Inventory_Order.Controllers
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "Unable to update order.");
-                await LoadOrderFormLookupsAsync();
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
@@ -165,6 +165,15 @@ namespace Inventory_Order.Controllers
         public async Task<IActionResult> Cancel(int id)
         {
             await _orderServ.CancelOrderAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _orderServ.DeleteOrderAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -210,7 +219,7 @@ namespace Inventory_Order.Controllers
                 }).ToList()
             };
 
-            await LoadOrderFormLookupsAsync();
+            await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
             return View(model);
         }
 
@@ -228,7 +237,7 @@ namespace Inventory_Order.Controllers
 
             if (!ModelState.IsValid)
             {
-                await LoadOrderFormLookupsAsync();
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
@@ -236,7 +245,7 @@ namespace Inventory_Order.Controllers
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "Unable to update your order.");
-                await LoadOrderFormLookupsAsync();
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
