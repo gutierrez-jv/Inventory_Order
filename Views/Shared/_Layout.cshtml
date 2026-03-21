@@ -1,47 +1,83 @@
-﻿<!DOCTYPE html>
+@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Inventory_Order</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Inventory.io</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Inventory_Order.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Inventory_Order</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    @{
+        var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
+        var isAdmin = User?.IsInRole("Admin") ?? false;
+        var isCustomer = User?.IsInRole("Customer") ?? false;
+        var displayName = isAdmin ? "Admin" : User?.FindFirst("FirstName")?.Value ?? User?.Identity?.Name ?? "User";
+    }
+
+    @if (isAuthenticated)
+    {
+        <div class="app-bg">
+            <div class="app-shell">
+                <aside class="side-nav">
+                    <div class="brand">Inventory.<span>io</span></div>
+
+                    <nav class="menu-links">
+                        @if (isAdmin)
+                        {
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active-link" : "")" asp-controller="Customer" asp-action="Index">Customers</a>
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active-link" : "")" asp-controller="Order" asp-action="Index">Orders</a>
+                            <a class="menu-link cta-link" asp-controller="Product" asp-action="Create">+ Add product</a>
+                        }
+                        else if (isCustomer)
+                        {
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active-link" : "")" asp-controller="Order" asp-action="MyOrders">My orders</a>
+                            <a class="menu-link cta-link" asp-controller="Order" asp-action="Create">+ Create order</a>
+                        }
+                    </nav>
+
+                    <div class="mt-auto">
+                        <a class="menu-link" asp-controller="Account" asp-action="Logout">Log out</a>
+                    </div>
+                </aside>
+
+                <section class="content-area">
+                    <header class="top-bar">
+                        <div class="d-flex gap-2 align-items-center" style="width:100%;max-width:560px;">
+                            <input id="global-search" class="search-box" type="search" placeholder="Search" />
+                            <select id="global-search-field" class="form-select" style="max-width:180px;">
+                                <option value="all">All</option>
+                                <option value="name">Name</option>
+                                <option value="category">Category</option>
+                                <option value="barcode">Barcode</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                        <div class="top-icons">
+                            <span class="icon-dot"></span>
+                            <span class="icon-dot"></span>
+                            <span class="avatar" title="@displayName">@displayName</span>
+                        </div>
+                    </header>
+
+                    <main role="main" class="page-content">
+                        @RenderBody()
+                    </main>
+                </section>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+        </div>
+    }
+    else
+    {
+        <main class="auth-shell">
             @RenderBody()
         </main>
-    </div>
+    }
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Inventory_Order - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
