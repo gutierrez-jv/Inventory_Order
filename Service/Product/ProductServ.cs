@@ -1,75 +1,104 @@
 ﻿using Inventory_Order.Models.Database;
 using Inventory_Order.Repository.ProductRepository;
-using Inventory_Order.Service.Customer;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Order.Service.Product
 {
     public class ProductServ : IProductServ
     {
         private readonly IProductRepo _productRepo;
-        public ProductServ(ProductRepo productRepo)
+
+        public ProductServ(IProductRepo productRepo)
         {
             _productRepo = productRepo;
         }
-        public bool CreateProduct(ProductTb product)
+
+        public async Task<List<ProductTb>> GetAllProductsAsync()
         {
-            if (product == null) return false;
-            if (string.IsNullOrWhiteSpace(product.Name)) return false;
-            if (string.IsNullOrWhiteSpace(product.Type)) return false;
-            if (string.IsNullOrWhiteSpace(product.Barcode)) return false;
-            if (product.Price <= 0) return false;
-            if (product.Quantity < 0) return false;
+            var products = await _productRepo.GetAllProductsAsync();
+            return products ?? new List<ProductTb>();
+        }
 
-            var existingBarcode = _productRepo.GetProductByBarcode(product.Barcode);
-            if (existingBarcode != null) return false;
+        public async Task<ProductTb?> GetProductByIdAsync(int id)
+        {
+            if (id <= 0)
+                return null;
 
-            var existingId = _productRepo.GetProductById(product.ProductsId);
-            if (existingId != null) return false;
+            return await _productRepo.GetProductByIdAsync(id);
+        }
 
-            product.Stock = product.Quantity > 0;
+        public async Task<bool> CreateProductAsync(ProductTb product)
+        {
+            if (product == null)
+                return false;
 
-            _productRepo.AddProduct(product);
+            if (string.IsNullOrWhiteSpace(product.Name))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(product.Type))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(product.Barcode))
+                return false;
+
+            if (product.Price <= 0)
+                return false;
+
+            if (product.Quantity < 0)
+                return false;
+
+            var existingBarcode = await _productRepo.GetProductByBarcodeAsync(product.Barcode);
+            if (existingBarcode != null)
+                return false;
+
+            await _productRepo.AddProductAsync(product);
             return true;
         }
-        public bool DeleteProduct(int id)
+
+        public async Task<bool> UpdateProductAsync(ProductTb product)
         {
-            if (id <= 0) return false;
+            if (product == null)
+                return false;
 
-            var existing = _productRepo.GetProductById(id);
-            if (existing == null) return false;
+            if (product.ProductsId <= 0)
+                return false;
 
-            _productRepo.DeleteProduct(id);
+            if (string.IsNullOrWhiteSpace(product.Name))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(product.Type))
+                return false;
+
+            if (string.IsNullOrWhiteSpace(product.Barcode))
+                return false;
+
+            if (product.Price <= 0)
+                return false;
+
+            if (product.Quantity < 0)
+                return false;
+
+            var existingProduct = await _productRepo.GetProductByIdAsync(product.ProductsId);
+            if (existingProduct == null)
+                return false;
+
+            var duplicateBarcode = await _productRepo.GetProductByBarcodeAsync(product.Barcode);
+            if (duplicateBarcode != null && duplicateBarcode.ProductsId != product.ProductsId)
+                return false;
+
+            await _productRepo.UpdateProductAsync(product);
             return true;
         }
-        public IEnumerable<ProductTb> GetAllProducts()
+
+        public async Task<bool> DeleteProductAsync(int id)
         {
-            return _productRepo.GetAllProducts().Result ?? Enumerable.Empty<ProductTb>();
-        }
-        public async Task<ProductTb?> GetProductById(int id)
-        {
-            if (id <= 0) return null;
-            return await _productRepo.GetProductById(id);
-        }
-        public bool UpdateProduct(ProductTb product)
-        {
-            if (product == null) return false;
-            if (string.IsNullOrWhiteSpace(product.Name)) return false;
-            if (string.IsNullOrWhiteSpace(product.Type)) return false;
-            if (string.IsNullOrWhiteSpace(product.Barcode)) return false;
-            if (product.Price <= 0) return false;
-            if (product.Quantity < 0) return false;
-            if (product.ProductsId <= 0) return false;
+            if (id <= 0)
+                return false;
 
-            var exisitng = _productRepo.GetProductById(product.ProductsId).Result;
-            if (exisitng == null) return false;
+            var existingProduct = await _productRepo.GetProductByIdAsync(id);
+            if (existingProduct == null)
+                return false;
 
-            var duplicateBarcode = _productRepo.GetProductByBarcode(product.Barcode).Result;
-            if (duplicateBarcode != null && duplicateBarcode.ProductsId != product.ProductsId) return false;
-
-            product.Stock = product.Quantity > 0;
-
-            _productRepo.UpdateProduct(product);
+            await _productRepo.DeleteProductAsync(id);
             return true;
         }
     }

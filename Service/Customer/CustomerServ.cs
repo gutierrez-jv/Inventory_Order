@@ -1,60 +1,74 @@
 ﻿using Inventory_Order.Models.Database;
 using Inventory_Order.Repository.CustomerRepository;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Order.Service.Customer
 {
     public class CustomerServ : ICustomerServ
     {
         private readonly ICustomerRepo _customerRepo;
+
         public CustomerServ(ICustomerRepo customerRepo)
         {
             _customerRepo = customerRepo;
         }
 
-        public bool AddCustomer(CustomerTb customer)
+        public async Task<List<CustomerTb>> GetAllCustomersAsync()
         {
-            if (customer == null) return false;
-            if (string.IsNullOrEmpty(customer.FirstName) 
-                || string.IsNullOrEmpty(customer.LastName)) return false;
+            var customers = await _customerRepo.GetAllCustomersAsync();
+            return customers ?? new List<CustomerTb>();
+        }
 
-            _customerRepo.AddCustomer(customer);
+        public async Task<CustomerTb?> GetCustomerByIdAsync(int id)
+        {
+            if (id <= 0)
+                return null;
+
+            return await _customerRepo.GetCustomerByIdAsync(id);
+        }
+
+        public async Task<bool> AddCustomerAsync(CustomerTb customer)
+        {
+            if (customer == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(customer.FirstName) ||
+                string.IsNullOrWhiteSpace(customer.LastName))
+                return false;
+
+            await _customerRepo.AddCustomerAsync(customer);
             return true;
         }
 
-        public bool DeleteCustomer(int id)
+        public async Task<bool> UpdateCustomerAsync(CustomerTb customer)
         {
-            if (id <= 0) return false;
+            if (customer == null)
+                return false;
 
-            var existingCustomer = _customerRepo.GetCustomerById(id);
-            if (existingCustomer == null) return false;
+            if (customer.CustomerId <= 0)
+                return false;
 
-            _customerRepo.DeleteCustomer(id);
+            if (string.IsNullOrWhiteSpace(customer.FirstName) ||
+                string.IsNullOrWhiteSpace(customer.LastName))
+                return false;
+
+            var existingCustomer = await _customerRepo.GetCustomerByIdAsync(customer.CustomerId);
+            if (existingCustomer == null)
+                return false;
+
+            await _customerRepo.UpdateCustomerAsync(customer);
             return true;
         }
 
-        public IEnumerable<CustomerTb> GetAllCustomers()
+        public async Task<bool> DeleteCustomerAsync(int id)
         {
-            return _customerRepo.GetAllCustomers().Result ?? Enumerable.Empty<CustomerTb>();
-        }
+            if (id <= 0)
+                return false;
 
-        public async Task<CustomerTb?> GetCustomerById(int id)
-        {
-            if (id <= 0) return null;
-            return await _customerRepo.GetCustomerById(id);
-        }
+            var existingCustomer = await _customerRepo.GetCustomerByIdAsync(id);
+            if (existingCustomer == null)
+                return false;
 
-        public bool UpdateCustomer(CustomerTb customer)
-        {
-            if (customer == null) return false;
-            if (customer.CustomerId <= 0) return false;
-            if (string.IsNullOrEmpty(customer.FirstName) 
-                || string.IsNullOrEmpty(customer.LastName)) return false;
-
-            var existing = _customerRepo.GetCustomerById(customer.CustomerId);
-            if (existing == null) return false;
-
-            _customerRepo.UpdateCustomer(customer);
+            await _customerRepo.DeleteCustomerAsync(id);
             return true;
         }
     }

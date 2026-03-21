@@ -2,8 +2,7 @@
 using Inventory_Order.Repository.CustomerRepository;
 using Inventory_Order.Repository.OrderRepository;
 using Inventory_Order.Repository.ProductRepository;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+using Inventory_Order.ViewModels.Order;
 
 namespace Inventory_Order.Service.Order
 {
@@ -13,79 +12,143 @@ namespace Inventory_Order.Service.Order
         private readonly IProductRepo _productRepo;
         private readonly ICustomerRepo _customerRepo;
 
-        public OrderServ(IOrderRepo orderRepo, IProductRepo productRepo, ICustomerRepo customerRepo)
+        public OrderServ(
+            IOrderRepo orderRepo,
+            IProductRepo productRepo,
+            ICustomerRepo customerRepo)
         {
             _orderRepo = orderRepo;
-            _customerRepo = customerRepo;
             _productRepo = productRepo;
+            _customerRepo = customerRepo;
         }
 
-        public async Task<bool?> CreateOrder(OrderTb order)
+        public async Task<List<OrderTb>> GetAllOrdersAsync()
         {
-            if (order == null) return false;
-            if (order.Quantity <= 0) return false;
-
-            var customer = await _customerRepo.GetCustomerById(order.CustomersId);
-            if (customer == null) return false;
-            if (!customer.IsActive) return false;
-
-            var product = await _productRepo.GetProductById(order.ProductsId);
-            if (product == null) return false;
-            if (product.Quantity <= 0) return false;
-            if (order.Quantity > product.Quantity) return false;
-
-            order.Amount = order.Quantity * product.Price;
-
-            product.Quantity -= order.Quantity;
-            product.Stock = product.Quantity > 0;
-
-            await _orderRepo.AddOrder(order);
-            await _productRepo.UpdateProduct(product);
-            return false;
+            return await _orderRepo.GetAllOrdersWithDetailsAsync();
         }
 
-        public bool DeleteOrder(int id)
+        public async Task<OrderTb?> GetOrderByIdAsync(int id)
         {
-            if (id <= 0) return false;
+            if (id <= 0)
+                return null;
 
-            var existingOrder = _orderRepo.GetOrderById(id);
-            if (existingOrder == null) return false;
+            return await _orderRepo.GetOrderByIdWithDetailsAsync(id);
+        }
 
-            _orderRepo.DeleteOrder(id);
+        public async Task<List<OrderTb>> GetOrdersByCustomerIdAsync(int customerId)
+        {
+            if (customerId <= 0)
+                return new List<OrderTb>();
+
+            var orders = await _orderRepo.GetAllOrdersWithDetailsAsync();
+            return orders.Where(o => o.CustomersId == customerId).ToList();
+        }
+
+        public async Task<bool> CreateOrderAsync(CreateOrderRequestViewModel request)
+        {
+            if (request == null)
+                return false;
+
+            if (request.Items == null || !request.Items.Any())
+                return false;
+
+            var customer = await _customerRepo.GetCustomerByIdAsync(request.CustomersId);
+
+            // Rule 1: Customer must exist
+            if (customer == null)
+                return false;
+
+            // Rule 2: Customer must be active before ordering
+            if (!customer.IsActive)
+                return false;
+
+            decimal totalAmount = 0;
+            List<OrderItemTb> orderItems = new();
+
+            foreach (var item in request.Items)
+            {
+                if (item.Quantity <= 0)
+                    return false;
+
+                var product = await _productRepo.GetProductByIdAsync(item.ProductsId);
+
+                if (product == null)
+                    return false;
+
+                // Rule 5: Cannot order if stock is 0
+                if (product.Quantity <= 0)
+                    return false;
+
+                if (item.Quantity > product.Quantity)
+                    return false;
+
+                decimal lineTotal = product.Price * item.Quantity;
+                totalAmount += lineTotal;
+
+                orderItems.Add(new OrderItemTb
+                {
+                    ProductsId = product.ProductsId,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.Price,
+                    LineTotal = lineTotal
+                });
+
+                // Rule 4: Reduce stock after successful order
+                product.Quantity -= item.Quantity;
+                await _productRepo.UpdateProductAsync(product);
+            }
+
+            // Rule 3: Total amount calculated in service
+            var order = new OrderTb
+            {
+                CustomersId = request.CustomersId,
+                TotalAmount = totalAmount,
+                OrderStatus = "Pending",
+                DateCreated = DateTime.Now
+            };
+
+            order = await _orderRepo.AddOrderAsync(order);
+
+            foreach (var item in orderItems)
+            {
+                item.OrdersId = order.OrdersId;
+            }
+
+            await _orderRepo.AddOrderItemsAsync(orderItems);
+
             return true;
         }
 
-        public IEnumerable<OrderTb> GetAllOrders()
+        public async Task<bool> CompleteOrderAsync(int orderId)
         {
-            return _orderRepo.GetAllOrders().Result ?? Enumerable.Empty<OrderTb>();
-        }
+            if (orderId <= 0)
+                return false;
 
-        public OrderTb? GetOrderById(int id)
-        {
-            if (id <= 0) return null;
-            return _orderRepo.GetOrderById(id).Result;
-        }
+            var order = await _orderRepo.GetOrderByIdWithDetailsAsync(orderId);
 
-        public bool UpdateOrder(OrderTb order)
-        {
-            if (order == null) return false;
-            if (order.OrdersId <= 0) return false;
-            if (order.Quantity <= 0) return false;
+            if (order == null)
+                return false;
 
-            var existing = _orderRepo.GetOrderById(order.OrdersId).Result;
-            if (existing == null) return false;
+            order.OrderStatus = "Completed";
+            await _orderRepo.UpdateOrderAsync(order);
 
-            var customer = _customerRepo.GetCustomerById(order.CustomersId).Result;
-            if (customer == null) return false;
-            if (!customer.IsActive) return false;
-
-            var product = _productRepo.GetProductById(order.ProductsId).Result;
-            if (product == null) return false;
-
-            order.Amount = order.Quantity * product.Price;
-
-            _orderRepo.UpdateOrder(order);
             return true;
         }
-    }   
+
+        public async Task<bool> CancelOrderAsync(int orderId)
+        {
+            if (orderId <= 0)
+                return false;
+
+            var order = await _orderRepo.GetOrderByIdWithDetailsAsync(orderId);
+
+            if (order == null)
+                return false;
+
+            order.OrderStatus = "Cancelled";
+            await _orderRepo.UpdateOrderAsync(order);
+
+            return true;
+        }
+    }
 }
