@@ -181,5 +181,18 @@ namespace Inventory_Order.Service.Order
             await _orderRepo.UpdateOrderAsync(existingOrder);
             return true;
         }
+
+        public async Task<bool> DeleteOrderAsync(int orderId)
+        {
+            if (orderId <= 0)
+                return false;
+
+            var order = await _orderRepo.GetOrderByIdWithDetailsAsync(orderId);
+            if (order == null)
+                return false;
+
+            await _orderRepo.DeleteOrderAsync(orderId);
+            return true;
+        }
     }
 }

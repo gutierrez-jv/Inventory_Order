@@ -12,5 +12,6 @@ namespace Inventory_Order.Service.Order
         Task<bool> CompleteOrderAsync(int orderId);
         Task<bool> CancelOrderAsync(int orderId);
         Task<bool> UpdateOrderAsync(UpdateOrderRequestViewModel request);
+        Task<bool> DeleteOrderAsync(int orderId);
     }
 }

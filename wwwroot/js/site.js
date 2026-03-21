@@ -1,22 +1,33 @@
 (function () {
     const searchInput = document.getElementById('global-search');
+    const searchField = document.getElementById('global-search-field');
 
     if (!searchInput) {
         return;
     }
 
-    const filterRows = (query) => {
-        const normalized = query.trim().toLowerCase();
+    function filterRows() {
+        const query = (searchInput.value || '').trim().toLowerCase();
+        const field = searchField ? searchField.value : 'all';
         const rows = document.querySelectorAll('tr[data-search-row]');
 
         rows.forEach((row) => {
-            const rowText = row.textContent?.toLowerCase() ?? '';
-            row.style.display = normalized === '' || rowText.includes(normalized) ? '' : 'none';
-        });
-    };
+            let text = '';
 
-    searchInput.addEventListener('input', (event) => {
-        const query = event.target.value;
-        filterRows(query);
-    });
+            if (field === 'all') {
+                text = row.textContent || '';
+            } else {
+                text = row.getAttribute('data-' + field) || row.textContent || '';
+            }
+
+            text = text.toLowerCase();
+            row.style.display = query === '' || text.includes(query) ? '' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', filterRows);
+
+    if (searchField) {
+        searchField.addEventListener('change', filterRows);
+    }
 })();

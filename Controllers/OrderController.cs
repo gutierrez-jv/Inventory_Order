@@ -1,3 +1,4 @@
+using Inventory_Order.Models.Database;
 using Inventory_Order.Service.Customer;
 using Inventory_Order.Service.Order;
 using Inventory_Order.Service.Product;
@@ -35,6 +36,19 @@ namespace Inventory_Order.Controllers
             return null;
         }
 
+        private async Task<OrderTb?> GetOwnOrderAsync(int id)
+        {
+            var customerId = GetCustomerId();
+            if (!customerId.HasValue)
+                return null;
+
+            var order = await _orderServ.GetOrderByIdAsync(id);
+            if (order == null || order.CustomersId != customerId.Value)
+                return null;
+
+            return order;
+        }
+
         private async Task LoadOrderFormLookupsAsync()
         {
             var customers = await _customerServ.GetAllCustomersAsync();
@@ -62,7 +76,7 @@ namespace Inventory_Order.Controllers
                 productItems.Add(new SelectListItem
                 {
                     Value = product.ProductsId.ToString(),
-                    Text = product.Name + " (" + product.Barcode + ") - " + product.Price.ToString("C") + " | Stock: " + product.Quantity
+                    Text = product.Name + " (" + product.Barcode + ") - ₱" + product.Price.ToString("N2") + " | Stock: " + product.Quantity
                 });
             }
 
@@ -162,6 +176,76 @@ namespace Inventory_Order.Controllers
 
             var orders = await _orderServ.GetOrdersByCustomerIdAsync(customerId.Value);
             return View(orders);
+        }
+
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> MyOrderDetails(int id)
+        {
+            var order = await GetOwnOrderAsync(id);
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            return View(order);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpGet]
+        public async Task<IActionResult> MyOrderEdit(int id)
+        {
+            var order = await GetOwnOrderAsync(id);
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            var model = new UpdateOrderRequestViewModel
+            {
+                OrdersId = order.OrdersId,
+                CustomersId = order.CustomersId,
+                TotalAmount = order.TotalAmount,
+                OrderStatus = order.OrderStatus,
+                DateCreated = order.DateCreated
+            };
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MyOrderEdit(UpdateOrderRequestViewModel model)
+        {
+            var order = await GetOwnOrderAsync(model.OrdersId);
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            model.CustomersId = order.CustomersId;
+            model.DateCreated = order.DateCreated;
+            ModelState.Remove(nameof(UpdateOrderRequestViewModel.CustomersId));
+            ModelState.Remove(nameof(UpdateOrderRequestViewModel.DateCreated));
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var success = await _orderServ.UpdateOrderAsync(model);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update your order.");
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        [Authorize(Roles = "Admin,Customer")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MyOrderDelete(int id)
+        {
+            var order = await GetOwnOrderAsync(id);
+            if (order == null)
+                return RedirectToAction(nameof(MyOrders));
+
+            await _orderServ.DeleteOrderAsync(id);
+            return RedirectToAction(nameof(MyOrders));
         }
 
         [Authorize(Roles = "Admin,Customer")]

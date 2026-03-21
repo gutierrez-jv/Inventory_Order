@@ -47,7 +47,16 @@
 
                 <section class="content-area">
                     <header class="top-bar">
-                        <input id="global-search" class="search-box" type="search" placeholder="Search" />
+                        <div class="d-flex gap-2 align-items-center" style="width:100%;max-width:560px;">
+                            <input id="global-search" class="search-box" type="search" placeholder="Search" />
+                            <select id="global-search-field" class="form-select" style="max-width:180px;">
+                                <option value="all">All</option>
+                                <option value="name">Name</option>
+                                <option value="category">Category</option>
+                                <option value="barcode">Barcode</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
                         <div class="top-icons">
                             <span class="icon-dot"></span>
                             <span class="icon-dot"></span>

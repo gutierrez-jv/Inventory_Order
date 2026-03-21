@@ -17,7 +17,10 @@
         <table class="table align-middle searchable-table">
             <thead>
                 <tr>
-                    <th>Product Code</th>
+                    @if (isAdmin)
+                    {
+                        <th>Product Code</th>
+                    }
                     <th>Product Name</th>
                     <th>Category</th>
                     <th>Stock Quantity</th>
@@ -32,12 +35,15 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr data-search-row>
-                        <td>@item.ProductsId</td>
+                    <tr data-search-row data-name="@item.Name" data-category="@item.Type" data-barcode="@item.Barcode">
+                        @if (isAdmin)
+                        {
+                            <td>@item.ProductsId</td>
+                        }
                         <td>@item.Name</td>
                         <td>@item.Type</td>
                         <td>@item.Quantity</td>
-                        <td>@item.Price.ToString("C")</td>
+                        <td>₱@item.Price.ToString("N2")</td>
                         <td>@item.Barcode</td>
                         @if (isAdmin)
                         {

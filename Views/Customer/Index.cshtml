@@ -23,7 +23,7 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr data-search-row>
+                    <tr data-search-row data-name="@item.FirstName @item.LastName" data-status="@(item.IsActive ? "Active" : "Inactive")">
                         <td>@item.CustomerId</td>
                         <td>@item.FirstName</td>
                         <td>@item.LastName</td>

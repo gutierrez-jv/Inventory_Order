@@ -1,0 +1,39 @@
+@model Inventory_Order.ViewModels.Order.UpdateOrderRequestViewModel
+@{
+    ViewData["Title"] = "Edit My Order";
+}
+
+<h1 class="page-title">Edit my order</h1>
+
+<form asp-action="MyOrderEdit" method="post" class="panel">
+    @Html.AntiForgeryToken()
+    <input asp-for="OrdersId" type="hidden" />
+    <input asp-for="CustomersId" type="hidden" />
+    <input asp-for="DateCreated" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    <div class="grid-2">
+        <div>
+            <label asp-for="OrderStatus">Order Status</label>
+            <select asp-for="OrderStatus" class="form-select">
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+            <span asp-validation-for="OrderStatus" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="TotalAmount">Total Amount</label>
+            <input asp-for="TotalAmount" class="form-control" min="0.01" step="0.01" />
+            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-wisteria">Save changes</button>
+        <a asp-action="MyOrders" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

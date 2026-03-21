@@ -13,20 +13,31 @@
         <table class="table align-middle searchable-table">
             <thead>
                 <tr>
-                    <th>Order ID</th>
+                    <th>Order #</th>
+                    <th>Items</th>
                     <th>Total Amount</th>
                     <th>Status</th>
                     <th>Date Created</th>
+                    <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var order in Model)
                 {
-                    <tr data-search-row>
+                    <tr data-search-row data-status="@order.OrderStatus">
                         <td>@order.OrdersId</td>
-                        <td>@order.TotalAmount.ToString("C")</td>
+                        <td>@order.OrderItemTbs.Count</td>
+                        <td>₱@order.TotalAmount.ToString("N2")</td>
                         <td>@order.OrderStatus</td>
                         <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="MyOrderDetails" asp-route-id="@order.OrdersId">View</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-action="MyOrderEdit" asp-route-id="@order.OrdersId">Edit</a>
+                            <form asp-action="MyOrderDelete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

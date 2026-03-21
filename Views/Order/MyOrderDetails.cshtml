@@ -1,24 +1,24 @@
 @model Inventory_Order.Models.Database.OrderTb
 @{
-    ViewData["Title"] = "Order Details";
+    ViewData["Title"] = "My Order Details";
 }
 
-<h1 class="page-title">Order #@Model.OrdersId</h1>
+<h1 class="page-title">My Order #@Model.OrdersId</h1>
 
 <div class="panel">
     <div class="grid-2">
-        <div><strong>Customer:</strong> @(Model.Customers != null ? Model.Customers.FirstName + " " + Model.Customers.LastName : "#" + Model.CustomersId)</div>
         <div><strong>Status:</strong> @Model.OrderStatus</div>
-        <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div>
         <div><strong>Created:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div>
+        <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div>
+        <div><strong>Total Items:</strong> @Model.OrderItemTbs.Count</div>
     </div>
 
-    <h5 class="mt-4">Order items</h5>
+    <h5 class="mt-4">Items</h5>
     <div class="table-responsive">
         <table class="table align-middle searchable-table">
             <thead>
                 <tr>
-                    <th>Product Name</th>
+                    <th>Product</th>
                     <th>Quantity</th>
                     <th>Unit Price</th>
                     <th>Line Total</th>
@@ -38,5 +38,5 @@
         </table>
     </div>
 
-    <a asp-action="Index" class="btn btn-outline-secondary">Back to orders</a>
+    <a asp-action="MyOrders" class="btn btn-outline-secondary">Back</a>
 </div>
