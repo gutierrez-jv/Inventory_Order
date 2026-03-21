@@ -13,14 +13,11 @@ namespace Inventory_Order.ViewModels.Order
         public int CustomersId { get; set; }
 
         [Required]
-        [Range(0.01, double.MaxValue)]
-        public decimal TotalAmount { get; set; }
-
-        [Required]
         [StringLength(20)]
         public string OrderStatus { get; set; } = "Pending";
 
         [Required]
-        public DateTime DateCreated { get; set; }
+        [MinLength(1, ErrorMessage = "At least one order item is required.")]
+        public List<OrderItemRequestViewModel> Items { get; set; } = new();
     }
 }

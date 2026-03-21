@@ -111,17 +111,19 @@ namespace Inventory_Order.Controllers
             if (order == null)
                 return NotFound();
 
-            await LoadOrderFormLookupsAsync();
-
             var model = new UpdateOrderRequestViewModel
             {
                 OrdersId = order.OrdersId,
                 CustomersId = order.CustomersId,
-                TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus,
-                DateCreated = order.DateCreated
+                Items = order.OrderItemTbs.Select(i => new OrderItemRequestViewModel
+                {
+                    ProductsId = i.ProductsId,
+                    Quantity = i.Quantity
+                }).ToList()
             };
 
+            await LoadOrderFormLookupsAsync();
             return View(model);
         }
 
@@ -200,11 +202,15 @@ namespace Inventory_Order.Controllers
             {
                 OrdersId = order.OrdersId,
                 CustomersId = order.CustomersId,
-                TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus,
-                DateCreated = order.DateCreated
+                Items = order.OrderItemTbs.Select(i => new OrderItemRequestViewModel
+                {
+                    ProductsId = i.ProductsId,
+                    Quantity = i.Quantity
+                }).ToList()
             };
 
+            await LoadOrderFormLookupsAsync();
             return View(model);
         }
 
@@ -218,24 +224,26 @@ namespace Inventory_Order.Controllers
                 return RedirectToAction(nameof(MyOrders));
 
             model.CustomersId = order.CustomersId;
-            model.DateCreated = order.DateCreated;
             ModelState.Remove(nameof(UpdateOrderRequestViewModel.CustomersId));
-            ModelState.Remove(nameof(UpdateOrderRequestViewModel.DateCreated));
 
             if (!ModelState.IsValid)
+            {
+                await LoadOrderFormLookupsAsync();
                 return View(model);
+            }
 
             var success = await _orderServ.UpdateOrderAsync(model);
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "Unable to update your order.");
+                await LoadOrderFormLookupsAsync();
                 return View(model);
             }
 
             return RedirectToAction(nameof(MyOrders));
         }
 
-        [Authorize(Roles = "Admin,Customer")]
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MyOrderDelete(int id)

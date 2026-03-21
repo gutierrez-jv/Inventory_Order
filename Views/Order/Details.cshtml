@@ -10,7 +10,7 @@
         <div><strong>Customer:</strong> @(Model.Customers != null ? Model.Customers.FirstName + " " + Model.Customers.LastName : "#" + Model.CustomersId)</div>
         <div><strong>Status:</strong> @Model.OrderStatus</div>
         <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div>
-        <div><strong>Created:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div>
+        <div><strong>Last Updated:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div>
     </div>
 
     <h5 class="mt-4">Order items</h5>
