@@ -7,6 +7,11 @@
     <h1 class="auth-title">Wisteria bloom</h1>
     <p class="text-muted mb-4">Sign in as Administrator or Customer to continue to your inventory dashboard.</p>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
     <form asp-action="Login" method="post">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
@@ -23,7 +28,8 @@
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <button class="btn btn-wisteria w-100" type="submit">Sign in</button>
+        <button class="btn btn-wisteria w-100 mb-3" type="submit">Sign in</button>
+        <a class="btn btn-outline-secondary w-100" asp-action="Register">Register as customer</a>
     </form>
 </div>
 
