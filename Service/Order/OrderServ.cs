@@ -234,5 +234,49 @@ namespace Inventory_Order.Service.Order
             await _orderRepo.DeleteOrderAsync(orderId);
             return true;
         }
+
+        public async Task<bool> UpdateOrderAsync(UpdateOrderRequestViewModel request)
+        {
+            if (request == null)
+                return false;
+
+            if (request.OrdersId <= 0 || request.CustomersId <= 0 || request.TotalAmount <= 0)
+                return false;
+
+            if (request.OrderStatus != "Pending" &&
+                request.OrderStatus != "Processing" &&
+                request.OrderStatus != "Completed" &&
+                request.OrderStatus != "Cancelled")
+                return false;
+
+            var existingOrder = await _orderRepo.GetOrderByIdWithDetailsAsync(request.OrdersId);
+            if (existingOrder == null)
+                return false;
+
+            var customer = await _customerRepo.GetCustomerByIdAsync(request.CustomersId);
+            if (customer == null || !customer.IsActive)
+                return false;
+
+            existingOrder.CustomersId = request.CustomersId;
+            existingOrder.TotalAmount = request.TotalAmount;
+            existingOrder.OrderStatus = request.OrderStatus;
+            existingOrder.DateCreated = request.DateCreated;
+
+            await _orderRepo.UpdateOrderAsync(existingOrder);
+            return true;
+        }
+
+        public async Task<bool> DeleteOrderAsync(int orderId)
+        {
+            if (orderId <= 0)
+                return false;
+
+            var order = await _orderRepo.GetOrderByIdWithDetailsAsync(orderId);
+            if (order == null)
+                return false;
+
+            await _orderRepo.DeleteOrderAsync(orderId);
+            return true;
+        }
     }
 }
