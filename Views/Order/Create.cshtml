@@ -1,0 +1,112 @@
+@model Inventory_Order.ViewModels.Order.CreateOrderRequestViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Create Order";
+    var customers = ViewBag.Customers as List<SelectListItem> ?? new List<SelectListItem>();
+    var products = ViewBag.Products as List<SelectListItem> ?? new List<SelectListItem>();
+    var isAdmin = User.IsInRole("Admin");
+
+    if (Model.Items == null || Model.Items.Count == 0)
+    {
+        Model.Items = new List<Inventory_Order.ViewModels.Order.OrderItemRequestViewModel>
+        {
+            new Inventory_Order.ViewModels.Order.OrderItemRequestViewModel()
+        };
+    }
+}
+
+<h1 class="page-title">Create order</h1>
+
+<form asp-action="Create" method="post" class="panel" id="order-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    @if (isAdmin)
+    {
+        <div class="mb-3">
+            <label asp-for="CustomersId">Customer</label>
+            <select asp-for="CustomersId" class="form-select" asp-items="customers">
+                <option value="">Select customer</option>
+            </select>
+            <span asp-validation-for="CustomersId" class="text-danger"></span>
+        </div>
+    }
+
+    <h5>Order items</h5>
+
+    <div id="items-container">
+        @for (var i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="grid-2 item-row mb-3" data-index="@i">
+                <div>
+                    <label>Product</label>
+                    <select name="Items[@i].ProductsId" class="form-select" required>
+                        <option value="">Select product</option>
+                        @foreach (var product in products)
+                        {
+                            if (product.Value == Model.Items[i].ProductsId.ToString())
+                            {
+                                <option selected value="@product.Value">@product.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@product.Value">@product.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>Quantity</label>
+                    <input name="Items[@i].Quantity" type="number" class="form-control" min="1" value="@(Model.Items[i].Quantity == 0 ? 1 : Model.Items[i].Quantity)" required />
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary" id="add-item">+ Add another product</button>
+        <button type="submit" class="btn btn-wisteria">Submit order</button>
+        <a asp-action="@(isAdmin ? "Index" : "MyOrders")" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+<template id="item-template">
+    <div class="grid-2 item-row mb-3" data-index="__index__">
+        <div>
+            <label>Product</label>
+            <select name="Items[__index__].ProductsId" class="form-select" required>
+                <option value="">Select product</option>
+                @foreach (var product in products)
+                {
+                    <option value="@product.Value">@product.Text</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label>Quantity</label>
+            <input name="Items[__index__].Quantity" type="number" class="form-control" min="1" value="1" required />
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (function () {
+            const itemsContainer = document.getElementById('items-container');
+            const addBtn = document.getElementById('add-item');
+            const template = document.getElementById('item-template');
+
+            if (!itemsContainer || !addBtn || !template) {
+                return;
+            }
+
+            addBtn.addEventListener('click', function () {
+                const currentRows = itemsContainer.querySelectorAll('.item-row').length;
+                const html = template.innerHTML.replaceAll('__index__', currentRows);
+                itemsContainer.insertAdjacentHTML('beforeend', html);
+            });
+        })();
+    </script>
+}

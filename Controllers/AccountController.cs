@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Inventory_Order.Service.Auth;
 using Inventory_Order.ViewModels.Auth;
 using Microsoft.AspNetCore.Authentication;
@@ -49,7 +49,8 @@ namespace Inventory_Order.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, result.Username),
-                new Claim(ClaimTypes.Role, result.Role)
+                new Claim(ClaimTypes.Role, result.Role),
+                new Claim("FirstName", string.IsNullOrWhiteSpace(result.FirstName) ? result.Username : result.FirstName)
             };
 
             if (result.UserId.HasValue)
@@ -72,6 +73,40 @@ namespace Inventory_Order.Controllers
                 return RedirectToAction("Index", "Order");
 
             return RedirectToAction("MyOrders", "Order");
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Admin"))
+                    return RedirectToAction("Index", "Order");
+
+                if (User.IsInRole("Customer"))
+                    return RedirectToAction("MyOrders", "Order");
+            }
+
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _authServ.RegisterCustomerAsync(model);
+
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "Registration successful. You can now sign in as customer.";
+            return RedirectToAction(nameof(Login));
         }
 
         public async Task<IActionResult> Logout()

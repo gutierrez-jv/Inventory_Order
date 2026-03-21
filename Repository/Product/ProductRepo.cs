@@ -1,4 +1,4 @@
-﻿using Inventory_Order.Models.Database;
+using Inventory_Order.Models.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Inventory_Order.Repository.ProductRepository
@@ -14,17 +14,22 @@ namespace Inventory_Order.Repository.ProductRepository
 
         public async Task<List<ProductTb>> GetAllProductsAsync()
         {
-            return await _context.ProductTbs.ToListAsync();
+            return await _context.ProductTbs
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<ProductTb?> GetProductByIdAsync(int id)
         {
-            return await _context.ProductTbs.FindAsync(id);
+            return await _context.ProductTbs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ProductsId == id);
         }
 
         public async Task<ProductTb?> GetProductByBarcodeAsync(string barcode)
         {
             return await _context.ProductTbs
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Barcode == barcode);
         }
 
@@ -36,7 +41,18 @@ namespace Inventory_Order.Repository.ProductRepository
 
         public async Task UpdateProductAsync(ProductTb product)
         {
-            _context.ProductTbs.Update(product);
+            var existingProduct = await _context.ProductTbs
+                .FirstOrDefaultAsync(p => p.ProductsId == product.ProductsId);
+
+            if (existingProduct == null)
+                return;
+
+            existingProduct.Name = product.Name;
+            existingProduct.Type = product.Type;
+            existingProduct.Quantity = product.Quantity;
+            existingProduct.Price = product.Price;
+            existingProduct.Barcode = product.Barcode;
+
             await _context.SaveChangesAsync();
         }
 
@@ -48,6 +64,11 @@ namespace Inventory_Order.Repository.ProductRepository
                 _context.ProductTbs.Remove(existingProduct);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        public async Task<bool> HasOrderItemsAsync(int productId)
+        {
+            return await _context.OrderItemTbs.AnyAsync(i => i.ProductsId == productId);
         }
     }
 }

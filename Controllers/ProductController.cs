@@ -1,11 +1,11 @@
-﻿using Inventory_Order.Models.Database;
+using Inventory_Order.Models.Database;
 using Inventory_Order.Service.Product;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Inventory_Order.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Customer")]
     public class ProductController : Controller
     {
         private readonly IProductServ _productServ;
@@ -21,12 +21,14 @@ namespace Inventory_Order.Controllers
             return View(products);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProductTb product)
@@ -45,6 +47,7 @@ namespace Inventory_Order.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -56,6 +59,7 @@ namespace Inventory_Order.Controllers
             return View(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ProductTb product)
@@ -74,11 +78,16 @@ namespace Inventory_Order.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _productServ.DeleteProductAsync(id);
+            var success = await _productServ.DeleteProductAsync(id);
+
+            if (!success)
+                TempData["ErrorMessage"] = "Unable to delete product. It may already be used in existing orders.";
+
             return RedirectToAction(nameof(Index));
         }
     }
