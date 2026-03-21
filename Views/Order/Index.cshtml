@@ -17,7 +17,7 @@
                     <th>Order Status</th>
                     <th>Customer Name</th>
                     <th>Total Amount</th>
-                    <th>Last Updated</th>
+                    <th>Date Created</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -41,6 +41,10 @@
                             <form asp-action="Cancel" asp-route-id="@order.OrdersId" method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                            </form>
+                            <form asp-action="Delete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         </td>
                     </tr>
