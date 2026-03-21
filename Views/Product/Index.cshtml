@@ -1,0 +1,57 @@
+@model IEnumerable<Inventory_Order.Models.Database.ProductTb>
+@{
+    ViewData["Title"] = "Products";
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="page-title mb-0">Products</h1>
+    @if (isAdmin)
+    {
+        <a class="btn btn-wisteria" asp-action="Create">Add product</a>
+    }
+</div>
+
+<div class="panel">
+    <div class="table-responsive">
+        <table class="table align-middle searchable-table">
+            <thead>
+                <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Stock Quantity</th>
+                    <th>Price per Item</th>
+                    <th>Barcode</th>
+                    @if (isAdmin)
+                    {
+                        <th class="text-end">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-search-row>
+                        <td>@item.ProductsId</td>
+                        <td>@item.Name</td>
+                        <td>@item.Type</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Price.ToString("C")</td>
+                        <td>@item.Barcode</td>
+                        @if (isAdmin)
+                        {
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.ProductsId">Edit</a>
+                                <form asp-action="Delete" asp-route-id="@item.ProductsId" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@model IEnumerable<Inventory_Order.Models.Database.OrderTb>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="page-title mb-0">My orders</h1>
+    <a class="btn btn-wisteria" asp-action="Create">Create order</a>
+</div>
+
+<div class="panel">
+    <div class="table-responsive">
+        <table class="table align-middle searchable-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Date Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr data-search-row>
+                        <td>@order.OrdersId</td>
+                        <td>@order.TotalAmount.ToString("C")</td>
+                        <td>@order.OrderStatus</td>
+                        <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
