@@ -15,6 +15,10 @@ public partial class OrderTb
 
     public int Amount { get; set; }
 
+    public string OrderStatus { get; set; } = null!;
+
+    public DateTime DateCreated { get; set; }
+
     public virtual CustomerTb Customers { get; set; } = null!;
 
     public virtual ProductTb Products { get; set; } = null!;

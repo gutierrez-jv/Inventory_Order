@@ -33,10 +33,10 @@ public partial class InventoryOrderDbContext : DbContext
 
             entity.ToTable("CustomerTb");
 
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
             entity.Property(e => e.FirstName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LastName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -48,7 +48,13 @@ public partial class InventoryOrderDbContext : DbContext
 
             entity.ToTable("OrderTb");
 
-            entity.Property(e => e.OrdersId).ValueGeneratedNever();
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.OrderStatus)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("Pending");
 
             entity.HasOne(d => d.Customers).WithMany(p => p.OrderTbs)
                 .HasForeignKey(d => d.CustomersId)
@@ -58,7 +64,7 @@ public partial class InventoryOrderDbContext : DbContext
             entity.HasOne(d => d.Products).WithMany(p => p.OrderTbs)
                 .HasForeignKey(d => d.ProductsId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Orders_Products1");
+                .HasConstraintName("FK_Orders_Products");
         });
 
         modelBuilder.Entity<ProductTb>(entity =>
@@ -67,9 +73,8 @@ public partial class InventoryOrderDbContext : DbContext
 
             entity.ToTable("ProductTb");
 
-            entity.HasIndex(e => e.Barcode, "IX_Products").IsUnique();
+            entity.HasIndex(e => e.Barcode, "UQ_ProductTb_Barcode").IsUnique();
 
-            entity.Property(e => e.ProductsId).ValueGeneratedNever();
             entity.Property(e => e.Barcode)
                 .HasMaxLength(50)
                 .IsUnicode(false);
