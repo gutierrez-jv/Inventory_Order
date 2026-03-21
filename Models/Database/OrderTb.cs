@@ -7,13 +7,9 @@ public partial class OrderTb
 {
     public int OrdersId { get; set; }
 
-    public int ProductsId { get; set; }
-
     public int CustomersId { get; set; }
 
-    public int Quantity { get; set; }
-
-    public int Amount { get; set; }
+    public decimal TotalAmount { get; set; }
 
     public string OrderStatus { get; set; } = null!;
 
@@ -21,5 +17,5 @@ public partial class OrderTb
 
     public virtual CustomerTb Customers { get; set; } = null!;
 
-    public virtual ProductTb Products { get; set; } = null!;
+    public virtual ICollection<OrderItemTb> OrderItemTbs { get; set; } = new List<OrderItemTb>();
 }

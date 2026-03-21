@@ -14,4 +14,6 @@ public partial class CustomerTb
     public bool IsActive { get; set; }
 
     public virtual ICollection<OrderTb> OrderTbs { get; set; } = new List<OrderTb>();
+
+    public virtual ICollection<UserTb> UserTbs { get; set; } = new List<UserTb>();
 }

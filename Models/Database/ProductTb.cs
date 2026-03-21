@@ -13,11 +13,9 @@ public partial class ProductTb
 
     public int Quantity { get; set; }
 
-    public int Price { get; set; }
-
-    public bool Stock { get; set; }
+    public decimal Price { get; set; }
 
     public string Barcode { get; set; } = null!;
 
-    public virtual ICollection<OrderTb> OrderTbs { get; set; } = new List<OrderTb>();
+    public virtual ICollection<OrderItemTb> OrderItemTbs { get; set; } = new List<OrderItemTb>();
 }
