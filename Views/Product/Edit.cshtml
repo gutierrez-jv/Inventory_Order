@@ -1,0 +1,49 @@
+@model Inventory_Order.Models.Database.ProductTb
+@{
+    ViewData["Title"] = "Edit Product";
+}
+
+<h1 class="page-title">Edit product</h1>
+
+<form class="panel" asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="ProductsId" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    <div class="grid-2">
+        <div>
+            <label asp-for="Name"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Barcode"></label>
+            <input asp-for="Barcode" class="form-control" />
+            <span asp-validation-for="Barcode" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Type"></label>
+            <input asp-for="Type" class="form-control" />
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Quantity"></label>
+            <input asp-for="Quantity" class="form-control" min="0" />
+            <span asp-validation-for="Quantity" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Price"></label>
+            <input asp-for="Price" class="form-control" min="0" step="0.01" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-wisteria">Update product</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
