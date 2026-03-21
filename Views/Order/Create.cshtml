@@ -1,0 +1,33 @@
+@model Inventory_Order.ViewModels.Order.CreateOrderRequestViewModel
+@{
+    ViewData["Title"] = "Create Order";
+}
+
+<h1 class="page-title">Create order</h1>
+
+<form asp-action="Create" method="post" class="panel">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+    <p class="text-muted">Add at least one item to place your order.</p>
+
+    <div class="grid-2">
+        <div>
+            <label for="item-product">Product ID</label>
+            <input id="item-product" name="Items[0].ProductsId" type="number" class="form-control" min="1" required />
+        </div>
+        <div>
+            <label for="item-quantity">Quantity</label>
+            <input id="item-quantity" name="Items[0].Quantity" type="number" class="form-control" min="1" required />
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-wisteria">Submit order</button>
+        <a asp-action="MyOrders" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
