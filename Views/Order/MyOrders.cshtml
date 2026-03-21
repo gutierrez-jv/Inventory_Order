@@ -10,7 +10,7 @@
 
 <div class="panel">
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle searchable-table">
             <thead>
                 <tr>
                     <th>Order ID</th>
@@ -22,7 +22,7 @@
             <tbody>
                 @foreach (var order in Model)
                 {
-                    <tr>
+                    <tr data-search-row>
                         <td>@order.OrdersId</td>
                         <td>@order.TotalAmount.ToString("C")</td>
                         <td>@order.OrderStatus</td>

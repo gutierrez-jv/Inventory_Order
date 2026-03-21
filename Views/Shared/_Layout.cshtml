@@ -34,6 +34,7 @@
                         }
                         else if (isCustomer)
                         {
+                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
                             <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active-link" : "")" asp-controller="Order" asp-action="MyOrders">My orders</a>
                             <a class="menu-link cta-link" asp-controller="Order" asp-action="Create">+ Create order</a>
                         }
@@ -46,7 +47,7 @@
 
                 <section class="content-area">
                     <header class="top-bar">
-                        <input class="search-box" type="search" placeholder="Search" />
+                        <input id="global-search" class="search-box" type="search" placeholder="Search" />
                         <div class="top-icons">
                             <span class="icon-dot"></span>
                             <span class="icon-dot"></span>

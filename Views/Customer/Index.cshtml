@@ -10,7 +10,7 @@
 
 <div class="panel">
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle searchable-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -23,7 +23,7 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
+                    <tr data-search-row>
                         <td>@item.CustomerId</td>
                         <td>@item.FirstName</td>
                         <td>@item.LastName</td>

@@ -159,8 +159,10 @@ namespace Inventory_Order.Service.Order
             if (request.OrdersId <= 0 || request.CustomersId <= 0 || request.TotalAmount <= 0)
                 return false;
 
-            var validStatuses = new[] { "Pending", "Completed", "Cancelled", "Processing" };
-            if (!validStatuses.Contains(request.OrderStatus))
+            if (request.OrderStatus != "Pending" &&
+                request.OrderStatus != "Processing" &&
+                request.OrderStatus != "Completed" &&
+                request.OrderStatus != "Cancelled")
                 return false;
 
             var existingOrder = await _orderRepo.GetOrderByIdWithDetailsAsync(request.OrdersId);

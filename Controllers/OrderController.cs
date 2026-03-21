@@ -40,23 +40,34 @@ namespace Inventory_Order.Controllers
             var customers = await _customerServ.GetAllCustomersAsync();
             var products = await _productServ.GetAllProductsAsync();
 
-            ViewBag.Customers = customers
-                .Where(c => c.IsActive)
-                .Select(c => new SelectListItem
-                {
-                    Value = c.CustomerId.ToString(),
-                    Text = $"{c.FirstName} {c.LastName} (#{c.CustomerId})"
-                })
-                .ToList();
+            var customerItems = new List<SelectListItem>();
+            foreach (var customer in customers)
+            {
+                if (!customer.IsActive)
+                    continue;
 
-            ViewBag.Products = products
-                .Where(p => p.Quantity > 0)
-                .Select(p => new SelectListItem
+                customerItems.Add(new SelectListItem
                 {
-                    Value = p.ProductsId.ToString(),
-                    Text = $"{p.Name} ({p.Barcode}) - {p.Price:C}"
-                })
-                .ToList();
+                    Value = customer.CustomerId.ToString(),
+                    Text = customer.FirstName + " " + customer.LastName + " (#" + customer.CustomerId + ")"
+                });
+            }
+
+            var productItems = new List<SelectListItem>();
+            foreach (var product in products)
+            {
+                if (product.Quantity <= 0)
+                    continue;
+
+                productItems.Add(new SelectListItem
+                {
+                    Value = product.ProductsId.ToString(),
+                    Text = product.Name + " (" + product.Barcode + ") - " + product.Price.ToString("C") + " | Stock: " + product.Quantity
+                });
+            }
+
+            ViewBag.Customers = customerItems;
+            ViewBag.Products = productItems;
         }
 
         [Authorize(Roles = "Admin")]
@@ -174,6 +185,7 @@ namespace Inventory_Order.Controllers
                     return RedirectToAction("AccessDenied", "Account");
 
                 model.CustomersId = customerId.Value;
+                ModelState.Remove(nameof(CreateOrderRequestViewModel.CustomersId));
             }
 
             if (!ModelState.IsValid)
