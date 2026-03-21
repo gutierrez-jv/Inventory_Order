@@ -1,7 +1,6 @@
 using Inventory_Order.Models.Database;
 using Inventory_Order.Repository.CustomerRepository;
 using Inventory_Order.Repository.OrderRepository;
-using Inventory_Order.Repository.ProductRepository;
 using Inventory_Order.ViewModels.Order;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,19 +8,23 @@ namespace Inventory_Order.Service.Order
 {
     public class OrderServ : IOrderServ
     {
+        private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Pending",
+            "Completed",
+            "Cancelled"
+        };
+
         private readonly IOrderRepo _orderRepo;
-        private readonly IProductRepo _productRepo;
         private readonly ICustomerRepo _customerRepo;
         private readonly InventoryOrderDbContext _dbContext;
 
         public OrderServ(
             IOrderRepo orderRepo,
-            IProductRepo productRepo,
             ICustomerRepo customerRepo,
             InventoryOrderDbContext dbContext)
         {
             _orderRepo = orderRepo;
-            _productRepo = productRepo;
             _customerRepo = customerRepo;
             _dbContext = dbContext;
         }
@@ -57,50 +60,78 @@ namespace Inventory_Order.Service.Order
             if (customer == null || !customer.IsActive)
                 return false;
 
-            decimal totalAmount = 0;
-            List<OrderItemTb> orderItems = new();
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            foreach (var item in request.Items)
+            try
             {
-                if (item.Quantity <= 0)
-                    return false;
+                var groupedItems = request.Items
+                    .GroupBy(i => i.ProductsId)
+                    .Select(g => new
+                    {
+                        ProductsId = g.Key,
+                        Quantity = g.Sum(x => x.Quantity)
+                    })
+                    .ToList();
 
-                var product = await _productRepo.GetProductByIdAsync(item.ProductsId);
-                if (product == null || product.Quantity <= 0 || item.Quantity > product.Quantity)
-                    return false;
+                decimal totalAmount = 0;
+                var orderItems = new List<OrderItemTb>();
 
-                decimal lineTotal = product.Price * item.Quantity;
-                totalAmount += lineTotal;
-
-                orderItems.Add(new OrderItemTb
+                foreach (var item in groupedItems)
                 {
-                    ProductsId = product.ProductsId,
-                    Quantity = item.Quantity,
-                    UnitPrice = product.Price,
-                    LineTotal = lineTotal
-                });
+                    if (item.Quantity <= 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
 
-                product.Quantity -= item.Quantity;
-                await _productRepo.UpdateProductAsync(product);
+                    var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
+                    if (product == null || product.Quantity < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+
+                    var lineTotal = product.Price * item.Quantity;
+                    totalAmount += lineTotal;
+
+                    orderItems.Add(new OrderItemTb
+                    {
+                        ProductsId = product.ProductsId,
+                        Quantity = item.Quantity,
+                        UnitPrice = product.Price,
+                        LineTotal = lineTotal
+                    });
+
+                    product.Quantity -= item.Quantity;
+                }
+
+                var order = new OrderTb
+                {
+                    CustomersId = request.CustomersId,
+                    TotalAmount = totalAmount,
+                    OrderStatus = "Pending",
+                    DateCreated = DateTime.Now
+                };
+
+                await _dbContext.OrderTbs.AddAsync(order);
+                await _dbContext.SaveChangesAsync();
+
+                foreach (var item in orderItems)
+                {
+                    item.OrdersId = order.OrdersId;
+                }
+
+                await _dbContext.OrderItemTbs.AddRangeAsync(orderItems);
+                await _dbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
             }
-
-            var order = new OrderTb
+            catch
             {
-                CustomersId = request.CustomersId,
-                TotalAmount = totalAmount,
-                OrderStatus = "Pending",
-                DateCreated = DateTime.Now
-            };
-
-            order = await _orderRepo.AddOrderAsync(order);
-
-            foreach (var item in orderItems)
-            {
-                item.OrdersId = order.OrdersId;
+                await transaction.RollbackAsync();
+                return false;
             }
-
-            await _orderRepo.AddOrderItemsAsync(orderItems);
-            return true;
         }
 
         public async Task<bool> CompleteOrderAsync(int orderId)
@@ -139,10 +170,7 @@ namespace Inventory_Order.Service.Order
             if (request.Items == null || request.Items.Count == 0)
                 return false;
 
-            if (request.OrderStatus != "Pending" &&
-                request.OrderStatus != "Processing" &&
-                request.OrderStatus != "Completed" &&
-                request.OrderStatus != "Cancelled")
+            if (!AllowedStatuses.Contains(request.OrderStatus))
                 return false;
 
             var customer = await _customerRepo.GetCustomerByIdAsync(request.CustomersId);
@@ -151,65 +179,81 @@ namespace Inventory_Order.Service.Order
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            var order = await _dbContext.OrderTbs
-                .Include(o => o.OrderItemTbs)
-                .FirstOrDefaultAsync(o => o.OrdersId == request.OrdersId);
+            try
+            {
+                var order = await _dbContext.OrderTbs
+                    .Include(o => o.OrderItemTbs)
+                    .FirstOrDefaultAsync(o => o.OrdersId == request.OrdersId);
 
-            if (order == null)
+                if (order == null)
+                    return false;
+
+                foreach (var oldItem in order.OrderItemTbs)
+                {
+                    var oldProduct = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == oldItem.ProductsId);
+                    if (oldProduct != null)
+                        oldProduct.Quantity += oldItem.Quantity;
+                }
+
+                _dbContext.OrderItemTbs.RemoveRange(order.OrderItemTbs);
+
+                var groupedItems = request.Items
+                    .GroupBy(i => i.ProductsId)
+                    .Select(g => new
+                    {
+                        ProductsId = g.Key,
+                        Quantity = g.Sum(x => x.Quantity)
+                    })
+                    .ToList();
+
+                decimal total = 0;
+                var newItems = new List<OrderItemTb>();
+
+                foreach (var item in groupedItems)
+                {
+                    if (item.Quantity <= 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+
+                    var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
+                    if (product == null || product.Quantity < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+
+                    product.Quantity -= item.Quantity;
+
+                    var lineTotal = product.Price * item.Quantity;
+                    total += lineTotal;
+
+                    newItems.Add(new OrderItemTb
+                    {
+                        OrdersId = order.OrdersId,
+                        ProductsId = product.ProductsId,
+                        Quantity = item.Quantity,
+                        UnitPrice = product.Price,
+                        LineTotal = lineTotal
+                    });
+                }
+
+                order.CustomersId = request.CustomersId;
+                order.OrderStatus = AllowedStatuses.First(s => s.Equals(request.OrderStatus, StringComparison.OrdinalIgnoreCase));
+                order.TotalAmount = total;
+                order.DateCreated = DateTime.Now;
+
+                await _dbContext.OrderItemTbs.AddRangeAsync(newItems);
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
                 return false;
-
-            // Return previous stock from old items
-            foreach (var oldItem in order.OrderItemTbs)
-            {
-                var oldProduct = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == oldItem.ProductsId);
-                if (oldProduct != null)
-                    oldProduct.Quantity += oldItem.Quantity;
             }
-
-            _dbContext.OrderItemTbs.RemoveRange(order.OrderItemTbs);
-
-            decimal total = 0;
-            var newItems = new List<OrderItemTb>();
-
-            foreach (var item in request.Items)
-            {
-                if (item.Quantity <= 0)
-                {
-                    await transaction.RollbackAsync();
-                    return false;
-                }
-
-                var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
-                if (product == null || product.Quantity < item.Quantity)
-                {
-                    await transaction.RollbackAsync();
-                    return false;
-                }
-
-                product.Quantity -= item.Quantity;
-
-                var lineTotal = product.Price * item.Quantity;
-                total += lineTotal;
-
-                newItems.Add(new OrderItemTb
-                {
-                    OrdersId = order.OrdersId,
-                    ProductsId = product.ProductsId,
-                    Quantity = item.Quantity,
-                    UnitPrice = product.Price,
-                    LineTotal = lineTotal
-                });
-            }
-
-            order.CustomersId = request.CustomersId;
-            order.OrderStatus = request.OrderStatus;
-            order.TotalAmount = total;
-            order.DateCreated = DateTime.Now; // use as last edited timestamp
-
-            await _dbContext.OrderItemTbs.AddRangeAsync(newItems);
-            await _dbContext.SaveChangesAsync();
-            await transaction.CommitAsync();
-            return true;
         }
 
         public async Task<bool> DeleteOrderAsync(int orderId)
@@ -217,22 +261,35 @@ namespace Inventory_Order.Service.Order
             if (orderId <= 0)
                 return false;
 
-            var order = await _dbContext.OrderTbs
-                .Include(o => o.OrderItemTbs)
-                .FirstOrDefaultAsync(o => o.OrdersId == orderId);
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            if (order == null)
-                return false;
-
-            foreach (var item in order.OrderItemTbs)
+            try
             {
-                var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
-                if (product != null)
-                    product.Quantity += item.Quantity;
-            }
+                var order = await _dbContext.OrderTbs
+                    .Include(o => o.OrderItemTbs)
+                    .FirstOrDefaultAsync(o => o.OrdersId == orderId);
 
-            await _orderRepo.DeleteOrderAsync(orderId);
-            return true;
+                if (order == null)
+                    return false;
+
+                foreach (var item in order.OrderItemTbs)
+                {
+                    var product = await _dbContext.ProductTbs.FirstOrDefaultAsync(p => p.ProductsId == item.ProductsId);
+                    if (product != null)
+                        product.Quantity += item.Quantity;
+                }
+
+                _dbContext.OrderItemTbs.RemoveRange(order.OrderItemTbs);
+                _dbContext.OrderTbs.Remove(order);
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
         }
     }
 }
