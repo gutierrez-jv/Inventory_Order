@@ -1,7 +1,5 @@
 ﻿using Inventory_Order.Models.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Concurrent;
 
 namespace Inventory_Order.Repository.ProductRepository
 {
@@ -13,39 +11,43 @@ namespace Inventory_Order.Repository.ProductRepository
         {
             _context = context;
         }
-        public void AddProduct(ProductTb product)
-        {
-            _context.ProductTbs.Add(product);
-            _context.SaveChanges();
-        }
 
-        public void DeleteProduct(int id)
-        {
-            var ex = _context.ProductTbs.Find(id);
-            if (ex != null) _context.ProductTbs.Remove(ex);
-            _context.SaveChanges();
-        }
-
-        public async Task<List<ProductTb>> GetAllProducts()
+        public async Task<List<ProductTb>> GetAllProductsAsync()
         {
             return await _context.ProductTbs.ToListAsync();
         }
 
-        public async Task<ProductTb?> GetProductByBarcode(string barcode)
-        {
-            return await _context.ProductTbs.FirstOrDefaultAsync(p => p.Barcode == barcode);
-        }
-
-        public async Task<ProductTb?> GetProductById(int id)
+        public async Task<ProductTb?> GetProductByIdAsync(int id)
         {
             return await _context.ProductTbs.FindAsync(id);
         }
 
-        public async Task<ProductTb?> UpdateProduct(ProductTb product)
+        public async Task<ProductTb?> GetProductByBarcodeAsync(string barcode)
+        {
+            return await _context.ProductTbs
+                .FirstOrDefaultAsync(p => p.Barcode == barcode);
+        }
+
+        public async Task AddProductAsync(ProductTb product)
+        {
+            await _context.ProductTbs.AddAsync(product);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateProductAsync(ProductTb product)
         {
             _context.ProductTbs.Update(product);
             await _context.SaveChangesAsync();
-            return product;
+        }
+
+        public async Task DeleteProductAsync(int id)
+        {
+            var existingProduct = await _context.ProductTbs.FindAsync(id);
+            if (existingProduct != null)
+            {
+                _context.ProductTbs.Remove(existingProduct);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

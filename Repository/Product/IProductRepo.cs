@@ -4,11 +4,11 @@ namespace Inventory_Order.Repository.ProductRepository
 {
     public interface IProductRepo
     {
-        Task<List<ProductTb>> GetAllProducts();
-        Task<ProductTb?> GetProductById(int id);
-        Task<ProductTb?> GetProductByBarcode(string barcode);
-        void AddProduct(ProductTb product);
-        Task<ProductTb?> UpdateProduct(ProductTb product);
-        void DeleteProduct(int id);
+        Task<List<ProductTb>> GetAllProductsAsync();
+        Task<ProductTb?> GetProductByIdAsync(int id);
+        Task<ProductTb?> GetProductByBarcodeAsync(string barcode);
+        Task AddProductAsync(ProductTb product);
+        Task UpdateProductAsync(ProductTb product);
+        Task DeleteProductAsync(int id);
     }
 }

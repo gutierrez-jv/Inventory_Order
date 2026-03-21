@@ -17,68 +17,118 @@ public partial class InventoryOrderDbContext : DbContext
 
     public virtual DbSet<CustomerTb> CustomerTbs { get; set; }
 
+    public virtual DbSet<OrderItemTb> OrderItemTbs { get; set; }
+
     public virtual DbSet<OrderTb> OrderTbs { get; set; }
 
     public virtual DbSet<ProductTb> ProductTbs { get; set; }
 
+    public virtual DbSet<UserTb> UserTbs { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server=DESKTOP-TM6EI00;Database=InventoryOrderDb;Trusted_Connection=True;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CustomerTb>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK_Customers");
+            entity.HasKey(e => e.CustomerId);
 
             entity.ToTable("CustomerTb");
 
-            entity.Property(e => e.CustomerId).ValueGeneratedNever();
             entity.Property(e => e.FirstName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LastName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<OrderItemTb>(entity =>
+        {
+            entity.HasKey(e => e.OrderItemId);
+
+            entity.ToTable("OrderItemTb");
+
+            entity.Property(e => e.LineTotal).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Orders).WithMany(p => p.OrderItemTbs)
+                .HasForeignKey(d => d.OrdersId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_OrderItemTb_OrderTb");
+
+            entity.HasOne(d => d.Products).WithMany(p => p.OrderItemTbs)
+                .HasForeignKey(d => d.ProductsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_OrderItemTb_ProductTb");
+        });
+
         modelBuilder.Entity<OrderTb>(entity =>
         {
-            entity.HasKey(e => e.OrdersId).HasName("PK_Orders");
+            entity.HasKey(e => e.OrdersId);
 
             entity.ToTable("OrderTb");
 
-            entity.Property(e => e.OrdersId).ValueGeneratedNever();
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.OrderStatus)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
 
             entity.HasOne(d => d.Customers).WithMany(p => p.OrderTbs)
                 .HasForeignKey(d => d.CustomersId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Orders_Customers");
-
-            entity.HasOne(d => d.Products).WithMany(p => p.OrderTbs)
-                .HasForeignKey(d => d.ProductsId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Orders_Products1");
+                .HasConstraintName("FK_OrderTb_CustomerTb");
         });
 
         modelBuilder.Entity<ProductTb>(entity =>
         {
-            entity.HasKey(e => e.ProductsId).HasName("PK_Products");
+            entity.HasKey(e => e.ProductsId);
 
             entity.ToTable("ProductTb");
 
-            entity.HasIndex(e => e.Barcode, "IX_Products").IsUnique();
+            entity.HasIndex(e => e.Barcode, "UQ_ProductTb_Barcode").IsUnique();
 
-            entity.Property(e => e.ProductsId).ValueGeneratedNever();
             entity.Property(e => e.Barcode)
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Name)
-                .HasMaxLength(50)
+                .HasMaxLength(100)
                 .IsUnicode(false);
+            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<UserTb>(entity =>
+        {
+            entity.HasKey(e => e.UserId);
+
+            entity.ToTable("UserTb");
+
+            entity.HasIndex(e => e.Username, "UQ_UserTb_Username").IsUnique();
+
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.PasswordHash)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Username)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.Customer).WithMany(p => p.UserTbs)
+                .HasForeignKey(d => d.CustomerId)
+                .HasConstraintName("FK_UserTb_CustomerTb");
         });
 
         OnModelCreatingPartial(modelBuilder);

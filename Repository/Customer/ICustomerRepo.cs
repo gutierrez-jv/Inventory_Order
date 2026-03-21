@@ -4,10 +4,10 @@ namespace Inventory_Order.Repository.CustomerRepository
 {
     public interface ICustomerRepo
     {
-        Task<List<CustomerTb>> GetAllCustomers();
-        Task<CustomerTb?> GetCustomerById(int id);
-        void AddCustomer(CustomerTb customer);
-        void UpdateCustomer(CustomerTb customer);
-        void DeleteCustomer(int id);
+        Task<List<CustomerTb>> GetAllCustomersAsync();
+        Task<CustomerTb?> GetCustomerByIdAsync(int id);
+        Task AddCustomerAsync(CustomerTb customer);
+        Task UpdateCustomerAsync(CustomerTb customer);
+        Task DeleteCustomerAsync(int id);
     }
 }

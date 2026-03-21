@@ -4,11 +4,10 @@ namespace Inventory_Order.Service.Product
 {
     public interface IProductServ
     {
-        IEnumerable<ProductTb> GetAllProducts();
-        Task<ProductTb?> GetProductById(int id);
-        bool CreateProduct(ProductTb product);
-        bool UpdateProduct(ProductTb product);
-        bool DeleteProduct(int id);
-
+        Task<List<ProductTb>> GetAllProductsAsync();
+        Task<ProductTb?> GetProductByIdAsync(int id);
+        Task<bool> CreateProductAsync(ProductTb product);
+        Task<bool> UpdateProductAsync(ProductTb product);
+        Task<bool> DeleteProductAsync(int id);
     }
 }

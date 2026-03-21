@@ -4,10 +4,13 @@ namespace Inventory_Order.Repository.OrderRepository
 {
     public interface IOrderRepo
     {
-            Task<List<OrderTb>> GetAllOrders();
-            Task<OrderTb?> GetOrderById(int id);
-            Task<OrderTb?> AddOrder(OrderTb order);
-            void UpdateOrder(OrderTb order);
-            void DeleteOrder(int id);
+        Task<List<OrderTb>> GetAllOrdersWithDetailsAsync();
+        Task<OrderTb?> GetOrderByIdWithDetailsAsync(int id);
+
+        Task<OrderTb> AddOrderAsync(OrderTb order);
+        Task AddOrderItemsAsync(List<OrderItemTb> orderItems);
+
+        Task UpdateOrderAsync(OrderTb order);
+        Task DeleteOrderAsync(int id);
     }
 }
