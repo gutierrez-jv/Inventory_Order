@@ -41,10 +41,11 @@ namespace Inventory_Order.Repository.ProductRepository
             return await _context.ProductTbs.FindAsync(id);
         }
 
-        public void UpdateProduct(ProductTb product)
+        public async Task<ProductTb?> UpdateProduct(ProductTb product)
         {
             _context.ProductTbs.Update(product);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+            return product;
         }
     }
 }

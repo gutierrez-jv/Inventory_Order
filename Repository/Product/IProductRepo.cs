@@ -8,7 +8,7 @@ namespace Inventory_Order.Repository.ProductRepository
         Task<ProductTb?> GetProductById(int id);
         Task<ProductTb?> GetProductByBarcode(string barcode);
         void AddProduct(ProductTb product);
-        void UpdateProduct(ProductTb product);
+        Task<ProductTb?> UpdateProduct(ProductTb product);
         void DeleteProduct(int id);
     }
 }

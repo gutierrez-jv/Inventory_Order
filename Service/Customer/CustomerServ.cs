@@ -38,10 +38,10 @@ namespace Inventory_Order.Service.Customer
             return _customerRepo.GetAllCustomers().Result ?? Enumerable.Empty<CustomerTb>();
         }
 
-        public CustomerTb? GetCustomerById(int id)
+        public async Task<CustomerTb?> GetCustomerById(int id)
         {
             if (id <= 0) return null;
-            return _customerRepo.GetCustomerById(id).Result;
+            return await _customerRepo.GetCustomerById(id);
         }
 
         public bool UpdateCustomer(CustomerTb customer)

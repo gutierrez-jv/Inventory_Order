@@ -6,7 +6,7 @@ namespace Inventory_Order.Repository.OrderRepository
     {
             Task<List<OrderTb>> GetAllOrders();
             Task<OrderTb?> GetOrderById(int id);
-            void AddOrder(OrderTb order);
+            Task<OrderTb?> AddOrder(OrderTb order);
             void UpdateOrder(OrderTb order);
             void DeleteOrder(int id);
     }

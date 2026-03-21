@@ -11,10 +11,11 @@ namespace Inventory_Order.Repository.OrderRepository
         {
             _context = context;
         }
-        public void AddOrder(OrderTb order)
+        public async Task<OrderTb?> AddOrder(OrderTb order)
         {
             _context.OrderTbs.Add(order);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+            return order;
         }
 
         public void DeleteOrder(int id)
