@@ -29,20 +29,6 @@ body {
     gap: 1rem;
 }
 
-.btn-wisteria {
-    background-color: #0d6efd;
-    color: #fff;
-    border: 1px solid #0d6efd;
-}
-
-.btn-wisteria:hover,
-.btn-wisteria:focus,
-.btn-wisteria:active {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
-    color: #fff;
-}
-
 .auth-shell {
     max-width: 980px;
 }
