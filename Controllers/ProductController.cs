@@ -36,14 +36,24 @@ namespace Inventory_Order.Controllers
             if (!ModelState.IsValid)
                 return View(product);
 
-            var success = await _productServ.CreateProductAsync(product);
-
-            if (!success)
+            bool success;
+            try
             {
-                ModelState.AddModelError(string.Empty, "Unable to create product.");
+                success = await _productServ.CreateProductAsync(product);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "A system error occurred while creating the product.");
                 return View(product);
             }
 
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to create product. Please verify required fields and barcode uniqueness.");
+                return View(product);
+            }
+
+            TempData["SuccessMessage"] = "Product created successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -67,14 +77,24 @@ namespace Inventory_Order.Controllers
             if (!ModelState.IsValid)
                 return View(product);
 
-            var success = await _productServ.UpdateProductAsync(product);
-
-            if (!success)
+            bool success;
+            try
             {
-                ModelState.AddModelError(string.Empty, "Unable to update product.");
+                success = await _productServ.UpdateProductAsync(product);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "A system error occurred while updating the product.");
                 return View(product);
             }
 
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update product. Please verify required fields and barcode uniqueness.");
+                return View(product);
+            }
+
+            TempData["SuccessMessage"] = "Product updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -83,10 +103,21 @@ namespace Inventory_Order.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var success = await _productServ.DeleteProductAsync(id);
+            bool success;
+            try
+            {
+                success = await _productServ.DeleteProductAsync(id);
+            }
+            catch
+            {
+                TempData["ErrorMessage"] = "A system error occurred while deleting the product.";
+                return RedirectToAction(nameof(Index));
+            }
 
             if (!success)
                 TempData["ErrorMessage"] = "Unable to delete product. It may already be used in existing orders.";
+            else
+                TempData["SuccessMessage"] = "Product deleted successfully.";
 
             return RedirectToAction(nameof(Index));
         }

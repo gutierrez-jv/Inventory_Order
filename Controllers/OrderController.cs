@@ -84,6 +84,9 @@ namespace Inventory_Order.Controllers
             ViewBag.Products = productItems;
         }
 
+        private void SetSuccess(string message) => TempData["SuccessMessage"] = message;
+        private void SetError(string message) => TempData["ErrorMessage"] = message;
+
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
@@ -138,15 +141,26 @@ namespace Inventory_Order.Controllers
                 return View(model);
             }
 
-            var success = await _orderServ.UpdateOrderAsync(model);
-
-            if (!success)
+            bool success;
+            try
             {
-                ModelState.AddModelError(string.Empty, "Unable to update order.");
+                success = await _orderServ.UpdateOrderAsync(model);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "A system error occurred while updating the order.");
                 await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update order. Please verify customer, products, and stock levels.");
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
+                return View(model);
+            }
+
+            SetSuccess("Order updated successfully.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -155,7 +169,21 @@ namespace Inventory_Order.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Complete(int id)
         {
-            await _orderServ.CompleteOrderAsync(id);
+            bool success;
+            try
+            {
+                success = await _orderServ.CompleteOrderAsync(id);
+            }
+            catch
+            {
+                SetError("A system error occurred while completing the order.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!success)
+                SetError("Unable to complete order. It may be invalid or missing.");
+            else
+                SetSuccess("Order marked as completed.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -164,7 +192,21 @@ namespace Inventory_Order.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id)
         {
-            await _orderServ.CancelOrderAsync(id);
+            bool success;
+            try
+            {
+                success = await _orderServ.CancelOrderAsync(id);
+            }
+            catch
+            {
+                SetError("A system error occurred while cancelling the order.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!success)
+                SetError("Unable to cancel order. It may be invalid or missing.");
+            else
+                SetSuccess("Order cancelled successfully.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -173,7 +215,21 @@ namespace Inventory_Order.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _orderServ.DeleteOrderAsync(id);
+            bool success;
+            try
+            {
+                success = await _orderServ.DeleteOrderAsync(id);
+            }
+            catch
+            {
+                SetError("A system error occurred while deleting the order.");
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!success)
+                SetError("Unable to delete order. It may be invalid or missing.");
+            else
+                SetSuccess("Order deleted successfully.");
             return RedirectToAction(nameof(Index));
         }
 
@@ -241,14 +297,26 @@ namespace Inventory_Order.Controllers
                 return View(model);
             }
 
-            var success = await _orderServ.UpdateOrderAsync(model);
-            if (!success)
+            bool success;
+            try
             {
-                ModelState.AddModelError(string.Empty, "Unable to update your order.");
+                success = await _orderServ.UpdateOrderAsync(model);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "A system error occurred while updating your order.");
                 await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
                 return View(model);
             }
 
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to update your order. Please verify products and stock levels.");
+                await LoadOrderFormLookupsAsync(includeOutOfStockProducts: true);
+                return View(model);
+            }
+
+            SetSuccess("Your order was updated successfully.");
             return RedirectToAction(nameof(MyOrders));
         }
 
@@ -261,7 +329,22 @@ namespace Inventory_Order.Controllers
             if (order == null)
                 return RedirectToAction(nameof(MyOrders));
 
-            await _orderServ.DeleteOrderAsync(id);
+            bool success;
+            try
+            {
+                success = await _orderServ.DeleteOrderAsync(id);
+            }
+            catch
+            {
+                SetError("A system error occurred while deleting your order.");
+                return RedirectToAction(nameof(MyOrders));
+            }
+
+            if (!success)
+                SetError("Unable to delete your order right now.");
+            else
+                SetSuccess("Your order was deleted successfully.");
+
             return RedirectToAction(nameof(MyOrders));
         }
 
@@ -295,15 +378,26 @@ namespace Inventory_Order.Controllers
                 return View(model);
             }
 
-            var success = await _orderServ.CreateOrderAsync(model);
-
-            if (!success)
+            bool success;
+            try
             {
-                ModelState.AddModelError(string.Empty, "Unable to create order. Please verify customer, stock, and quantities.");
+                success = await _orderServ.CreateOrderAsync(model);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "A system error occurred while creating the order.");
                 await LoadOrderFormLookupsAsync();
                 return View(model);
             }
 
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, "Unable to create order. Please verify customer, product selection, stock, and quantities.");
+                await LoadOrderFormLookupsAsync();
+                return View(model);
+            }
+
+            SetSuccess("Order created successfully.");
             if (User.IsInRole("Admin"))
                 return RedirectToAction(nameof(Index));
 

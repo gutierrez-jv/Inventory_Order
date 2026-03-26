@@ -68,10 +68,8 @@ body {
     border-radius: 10px;
     padding: 10px 12px;
     font-weight: 600;
-    transition: all 0.2s ease;
 }
 
-.menu-link:hover,
 .menu-link.active-link {
     background: rgba(255, 255, 255, 0.18);
     color: #fff;
@@ -191,8 +189,10 @@ textarea:focus {
     font-weight: 600;
 }
 
-.btn-wisteria:hover {
-    background: #7e00b4;
+.btn-wisteria,
+.btn-wisteria:focus,
+.btn-wisteria:active {
+    background: var(--wisteria-main);
     color: #fff;
 }
 
@@ -248,6 +248,17 @@ textarea:focus {
 
 .validation-summary-errors ul {
     margin: 0;
+}
+
+.swal2-popup {
+    border: 1px solid #e6dcf5;
+    border-radius: 16px;
+}
+
+.swal2-confirm.swal2-styled {
+    background: var(--wisteria-main) !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 @media (max-width: 992px) {
