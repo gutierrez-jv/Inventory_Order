@@ -78,8 +78,16 @@
         </main>
     }
 
+    <div id="swal-server-messages"
+         data-success="@TempData["SuccessMessage"]"
+         data-error="@TempData["ErrorMessage"]"
+         data-warning="@TempData["WarningMessage"]"
+         data-info="@TempData["InfoMessage"]"
+         hidden></div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/sweetalert2/sweetalert2.all.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

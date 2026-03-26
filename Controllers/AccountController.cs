@@ -38,7 +38,16 @@ namespace Inventory_Order.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _authServ.ValidateUserAsync(model.Username, model.Password);
+            LoginResultViewModel? result;
+            try
+            {
+                result = await _authServ.ValidateUserAsync(model.Username, model.Password);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Unable to sign in right now. Please try again in a moment.");
+                return View(model);
+            }
 
             if (result == null)
             {
@@ -69,6 +78,8 @@ namespace Inventory_Order.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
 
+            TempData["SuccessMessage"] = "Login successful. Welcome back, " + (string.IsNullOrWhiteSpace(result.FirstName) ? result.Username : result.FirstName) + "!";
+
             if (result.Role == "Admin")
                 return RedirectToAction("Index", "Order");
 
@@ -97,7 +108,16 @@ namespace Inventory_Order.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _authServ.RegisterCustomerAsync(model);
+            (bool Success, string ErrorMessage) result;
+            try
+            {
+                result = await _authServ.RegisterCustomerAsync(model);
+            }
+            catch
+            {
+                ModelState.AddModelError(string.Empty, "Unable to register right now. Please try again later.");
+                return View(model);
+            }
 
             if (!result.Success)
             {
