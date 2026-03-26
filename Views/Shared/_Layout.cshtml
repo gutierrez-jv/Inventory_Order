@@ -1,4 +1,3 @@
-@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,65 +14,61 @@
         var isAdmin = User?.IsInRole("Admin") ?? false;
         var isCustomer = User?.IsInRole("Customer") ?? false;
         var displayName = isAdmin ? "Admin" : User?.FindFirst("FirstName")?.Value ?? User?.Identity?.Name ?? "User";
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     }
 
     @if (isAuthenticated)
     {
-        <div class="app-bg">
-            <div class="app-shell">
-                <aside class="side-nav">
-                    <div class="brand">Inventory.<span>io</span></div>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">Inventory.io</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-                    <nav class="menu-links">
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         @if (isAdmin)
                         {
-                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
-                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active-link" : "")" asp-controller="Customer" asp-action="Index">Customers</a>
-                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active-link" : "")" asp-controller="Order" asp-action="Index">Orders</a>
-                            <a class="menu-link cta-link" asp-controller="Product" asp-action="Create">+ Add product</a>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Customer" ? "active" : "")" asp-controller="Customer" asp-action="Index">Customers</a></li>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="Index">Orders</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Create">Add Product</a></li>
                         }
                         else if (isCustomer)
                         {
-                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active-link" : "")" asp-controller="Product" asp-action="Index">Products</a>
-                            <a class="menu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active-link" : "")" asp-controller="Order" asp-action="MyOrders">My orders</a>
-                            <a class="menu-link cta-link" asp-controller="Order" asp-action="Create">+ Create order</a>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="MyOrders">My Orders</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Order" asp-action="Create">Create Order</a></li>
                         }
-                    </nav>
+                    </ul>
 
-                    <div class="mt-auto">
-                        <a class="menu-link" asp-controller="Account" asp-action="Logout">Log out</a>
+                    <form class="d-flex gap-2 me-3" role="search" onsubmit="return false;">
+                        <input id="global-search" class="form-control form-control-sm" type="search" placeholder="Search table rows" aria-label="Search" />
+                        <select id="global-search-field" class="form-select form-select-sm" style="min-width: 140px;">
+                            <option value="all">All</option>
+                            <option value="name">Name</option>
+                            <option value="category">Category</option>
+                            <option value="barcode">Barcode</option>
+                            <option value="status">Status</option>
+                        </select>
+                    </form>
+
+                    <div class="d-flex align-items-center gap-3 text-white-50">
+                        <span class="small">@displayName</span>
+                        <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Logout">Log out</a>
                     </div>
-                </aside>
-
-                <section class="content-area">
-                    <header class="top-bar">
-                        <div class="d-flex gap-2 align-items-center" style="width:100%;max-width:560px;">
-                            <input id="global-search" class="search-box" type="search" placeholder="Search" />
-                            <select id="global-search-field" class="form-select" style="max-width:180px;">
-                                <option value="all">All</option>
-                                <option value="name">Name</option>
-                                <option value="category">Category</option>
-                                <option value="barcode">Barcode</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        <div class="top-icons">
-                            <span class="icon-dot"></span>
-                            <span class="icon-dot"></span>
-                            <span class="avatar" title="@displayName">@displayName</span>
-                        </div>
-                    </header>
-
-                    <main role="main" class="page-content">
-                        @RenderBody()
-                    </main>
-                </section>
+                </div>
             </div>
-        </div>
+        </nav>
+
+        <main class="container py-4">
+            @RenderBody()
+        </main>
     }
     else
     {
-        <main class="auth-shell">
+        <main class="auth-shell container py-5">
             @RenderBody()
         </main>
     }
