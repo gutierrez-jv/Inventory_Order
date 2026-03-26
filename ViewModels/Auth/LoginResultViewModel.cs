@@ -1,4 +1,10 @@
-﻿namespace Inventory_Order.ViewModels.Auth
+﻿// ViewModel Explanation:
+//
+// ViewModels are used to transfer data between the Controller and the View (UI).
+// They contain only the fields needed for display or form input, not full database structure.
+// They also include validation rules using DataAnnotations.
+
+namespace Inventory_Order.ViewModels.Auth
 {
     public class LoginResultViewModel
     {

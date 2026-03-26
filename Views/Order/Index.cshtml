@@ -1,16 +1,17 @@
 @model IEnumerable<Inventory_Order.Models.Database.OrderTb>
 @{
-    ViewData["Title"] = "Orders";
+    ViewData["Title"] = "Orders"; // Sets the browser/page title
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="page-title mb-0">Orders</h1>
-    <a class="btn btn-wisteria" asp-action="Create">Create order</a>
+    <h1 class="page-title mb-0">Orders</h1> <!-- Page heading -->
+    <a class="btn btn-primary" asp-action="Create">Create order</a> <!-- Opens the create-order page -->
 </div>
 
 <div class="panel">
     <div class="table-responsive">
         <table class="table align-middle searchable-table">
+            <!-- Displays the list of orders -->
             <thead>
                 <tr>
                     <th>Order ID</th>
@@ -24,27 +25,31 @@
             <tbody>
                 @foreach (var order in Model)
                 {
+                    // Builds the customer's full name if available, otherwise shows a fallback ID
                     var customerName = order.Customers != null ? $"{order.Customers.FirstName} {order.Customers.LastName}" : $"Customer #{order.CustomersId}";
                     <tr data-search-row data-name="@customerName" data-status="@order.OrderStatus">
-                        <td>@order.OrdersId</td>
-                        <td>@order.OrderStatus</td>
-                        <td>@customerName</td>
-                        <td>₱@order.TotalAmount.ToString("N2")</td>
-                        <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@order.OrdersId</td> <!-- Shows the order ID -->
+                        <td>@order.OrderStatus</td> <!-- Shows the current order status -->
+                        <td>@customerName</td> <!-- Shows the customer name -->
+                        <td>₱@order.TotalAmount.ToString("N2")</td> <!-- Formats the total amount as peso currency -->
+                        <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td> <!-- Shows the order creation date and time -->
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@order.OrdersId">Details</a>
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@order.OrdersId">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@order.OrdersId">Details</a> <!-- Opens the full order details -->
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@order.OrdersId">Edit</a> <!-- Opens the edit-order page -->
+
                             <form asp-action="Complete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-success">Complete</button>
+                                @Html.AntiForgeryToken() <!-- Protects the form from CSRF -->
+                                <button type="submit" class="btn btn-sm btn-outline-success">Complete</button> <!-- Marks the order as completed -->
                             </form>
+
                             <form asp-action="Cancel" asp-route-id="@order.OrdersId" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                @Html.AntiForgeryToken() <!-- Protects the form from CSRF -->
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button> <!-- Cancels the selected order -->
                             </form>
+
                             <form asp-action="Delete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                @Html.AntiForgeryToken() <!-- Protects the form from CSRF -->
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button> <!-- Permanently deletes the order -->
                             </form>
                         </td>
                     </tr>

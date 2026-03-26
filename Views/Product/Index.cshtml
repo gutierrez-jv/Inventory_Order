@@ -1,31 +1,25 @@
 @model IEnumerable<Inventory_Order.Models.Database.ProductTb>
 @{
-    ViewData["Title"] = "Products";
-    var isAdmin = User.IsInRole("Admin");
-}
-
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    ViewData["Title"] = "Products"; // Sets the browser/page title
+    var isAdmin = User.IsInRole("Admin"); // Checks if the logged-in user has admin access
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="page-title mb-0">Products</h1>
+    <h1 class="page-title mb-0">Products</h1> <!-- Page heading -->
     @if (isAdmin)
     {
-        <a class="btn btn-wisteria" asp-action="Create">Add product</a>
+        <a class="btn btn-primary" asp-action="Create">Add product</a> <!-- Opens the add-product page for admins -->
     }
 </div>
 
 <div class="panel">
     <div class="table-responsive">
-        <table class="table align-middle searchable-table">
+        <table class="table align-middle searchable-table"> <!-- Displays the list of products -->
             <thead>
                 <tr>
                     @if (isAdmin)
                     {
-                        <th>Product Code</th>
+                        <th>Product Id</th> <!-- Shows the product ID column only for admins -->
                     }
                     <th>Product Name</th>
                     <th>Category</th>
@@ -34,7 +28,7 @@
                     <th>Barcode</th>
                     @if (isAdmin)
                     {
-                        <th class="text-end">Actions</th>
+                        <th class="text-end">Actions</th> <!-- Shows action buttons only for admins -->
                     }
                 </tr>
             </thead>
@@ -44,20 +38,20 @@
                     <tr data-search-row data-name="@item.Name" data-category="@item.Type" data-barcode="@item.Barcode">
                         @if (isAdmin)
                         {
-                            <td>@item.ProductsId</td>
+                            <td>@item.ProductsId</td> <!-- Displays the product ID -->
                         }
-                        <td>@item.Name</td>
-                        <td>@item.Type</td>
-                        <td>@item.Quantity</td>
-                        <td>₱@item.Price.ToString("N2")</td>
-                        <td>@item.Barcode</td>
+                        <td>@item.Name</td> <!-- Displays the product name -->
+                        <td>@item.Type</td> <!-- Displays the product category/type -->
+                        <td>@item.Quantity</td> <!-- Displays the available stock quantity -->
+                        <td>₱@item.Price.ToString("N2")</td> <!-- Formats and displays the product price -->
+                        <td>@item.Barcode</td> <!-- Displays the product barcode -->
                         @if (isAdmin)
                         {
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.ProductsId">Edit</a>
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.ProductsId">Edit</a> <!-- Opens the edit-product page -->
                                 <form asp-action="Delete" asp-route-id="@item.ProductsId" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    @Html.AntiForgeryToken() <!-- Protects the delete form from CSRF -->
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button> <!-- Deletes the selected product -->
                                 </form>
                             </td>
                         }
