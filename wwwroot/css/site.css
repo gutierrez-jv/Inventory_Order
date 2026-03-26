@@ -1,63 +1,81 @@
+/* rem = relative unit based on the root/html font-size.
+   Example: if html font-size is 16px, then 1rem = 16px.
+
+   vh = viewport height.
+   100vh means 100% of the visible browser height.
+*/
+
+/* Applies base settings to the whole HTML document */
 html {
-    font-size: 16px;
-    min-height: 100%;
+    font-size: 16px; /* Sets the base font size for rem units */
+    min-height: 100%; /* Makes the html element at least full page height */
 }
 
+/* Styles the whole body/page */
 body {
-    margin: 0;
-    min-height: 100vh;
-    background-color: #f8f9fa;
+    margin: 0; /* Removes default browser spacing around the page */
+    min-height: 100vh; /* Makes the body take at least the full screen height */
+    background-color: #f8f9fa; /* Light gray background for the whole page */
 }
 
+/* Used for page headings like "Orders", "Products", "Customers" */
 .page-title {
-    margin-bottom: 1rem;
-    font-size: 1.75rem;
-    font-weight: 600;
+    margin-bottom: 1rem; /* Adds space below the title */
+    font-size: 1.75rem; /* Makes the title bigger */
+    font-weight: 600; /* Semi-bold text */
 }
 
+/* Reusable container/panel style for sections or boxes */
 .panel {
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    background: #fff; /* White background */
+    border: 1px solid #dee2e6; /* Light border */
+    border-radius: .5rem; /* Rounded corners */
+    padding: 1rem; /* Inner spacing */
+    margin-bottom: 1rem; /* Space below each panel */
 }
 
+/* Creates a 2-column layout using CSS Grid */
 .grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    display: grid; /* Turns this into a grid container */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* Makes 2 equal columns */
+    gap: 1rem; /* Space between columns */
 }
 
+/* Outer wrapper for authentication pages like Login/Register */
 .auth-shell {
-    max-width: 980px;
+    max-width: 980px; /* Limits the total width so auth content doesn't stretch too wide */
 }
 
+/* Card/container for login form or auth form */
 .auth-card {
-    width: min(100%, 440px);
-    margin: 0 auto;
-    background: #fff;
-    border: 1px solid #dee2e6;
-    border-radius: .5rem;
-    padding: 1.5rem;
+    width: min(100%, 440px); /* Full width on small screens, max 440px on larger screens */
+    margin: 0 auto; /* Centers the card horizontally */
+    background: #fff; /* White background */
+    border: 1px solid #dee2e6; /* Light border */
+    border-radius: .5rem; /* Rounded corners */
+    padding: 1.5rem; /* Inner spacing */
 }
 
+/* Main title inside the auth card, like "Login" */
 .auth-title {
-    font-size: 1.75rem;
-    font-weight: 600;
-    margin-bottom: .5rem;
+    font-size: 1.75rem; /* Bigger heading text */
+    font-weight: 600; /* Semi-bold */
+    margin-bottom: .5rem; /* Small spacing below title */
 }
 
+/* Removes extra bottom space from validation summary list */
 .validation-summary-errors ul {
     margin-bottom: 0;
 }
 
+/* Styles SweetAlert popup box corners */
 .swal2-popup {
     border-radius: .75rem;
 }
 
+/* Responsive rule for smaller screens like tablets/phones */
 @media (max-width: 768px) {
     .grid-2 {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Changes from 2 columns into 1 column on small screens */
     }
 }

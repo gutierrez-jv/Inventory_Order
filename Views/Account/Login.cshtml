@@ -1,35 +1,38 @@
 @model Inventory_Order.ViewModels.Auth.LoginViewModel
 @{
+    // Sets the page title
     ViewData["Title"] = "Login";
 }
 
 <div class="auth-card">
-    <h1 class="auth-title">Inventory.io</h1>
-    <p class="text-muted mb-4"> Note: For the admin use "admin" for the Username and "admin123" for the Password. 
-                                For the customer feel free to register.
-    </p>
+    <h1 class="auth-title">Inventory.io</h1> <!-- System name -->
+    <p class="text-muted mb-4">
+        Note: For the admin use "admin" for the Username and "admin123" for the Password.
+        For the customer feel free to register.
+    </p> <!-- Login instructions -->
 
     <form asp-action="Login" method="post">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <!-- Sends form data to the Login POST action -->
+        @Html.AntiForgeryToken() <!-- Security token to prevent CSRF attacks -->
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div> <!-- Shows model-level validation errors -->
 
         <div class="mb-3">
-            <label asp-for="Username"></label>
-            <input asp-for="Username" class="form-control" placeholder="Username" />
-            <span asp-validation-for="Username" class="text-danger"></span>
+            <label asp-for="Username"></label> <!-- Label for Username -->
+            <input asp-for="Username" class="form-control" placeholder="Username" /> <!-- Username input field -->
+            <span asp-validation-for="Username" class="text-danger"></span> <!-- Shows Username validation error -->
         </div>
 
         <div class="mb-4">
-            <label asp-for="Password"></label>
-            <input asp-for="Password" class="form-control" placeholder="Password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
+            <label asp-for="Password"></label> <!-- Label for Password -->
+            <input asp-for="Password" class="form-control" placeholder="Password" /> <!-- Password input field -->
+            <span asp-validation-for="Password" class="text-danger"></span> <!-- Shows Password validation error -->
         </div>
 
-        <button class="btn btn-primary w-100 mb-3" type="submit">Sign in</button>
-        <a class="btn btn-outline-secondary w-100" asp-action="Register">Register</a>
+        <button class="btn btn-primary w-100 mb-3" type="submit">Sign in</button> <!-- Submit login form -->
+        <a class="btn btn-outline-secondary w-100" asp-action="Register">Register</a> <!-- Go to register page -->
     </form>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" /> <!-- Loads client-side validation scripts -->
 }

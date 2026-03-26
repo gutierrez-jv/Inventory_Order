@@ -1,16 +1,17 @@
 @model IEnumerable<Inventory_Order.Models.Database.OrderTb>
 @{
-    ViewData["Title"] = "My Orders";
+    ViewData["Title"] = "My Orders"; // Sets the page title
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="page-title mb-0">My orders</h1>
-    <a class="btn btn-primary" asp-action="Create">Create order</a>
+    <h1 class="page-title mb-0">My orders</h1> <!-- Page heading -->
+    <a class="btn btn-primary" asp-action="Create">Create order</a> <!-- Opens the create-order page -->
 </div>
 
 <div class="panel">
     <div class="table-responsive">
         <table class="table align-middle searchable-table">
+            <!-- Displays the current user's orders -->
             <thead>
                 <tr>
                     <th>Order #</th>
@@ -25,17 +26,18 @@
                 @foreach (var order in Model)
                 {
                     <tr data-search-row data-status="@order.OrderStatus">
-                        <td>@order.OrdersId</td>
-                        <td>@order.OrderItemTbs.Count</td>
-                        <td>₱@order.TotalAmount.ToString("N2")</td>
-                        <td>@order.OrderStatus</td>
-                        <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@order.OrdersId</td> <!-- Shows the order number -->
+                        <td>@order.OrderItemTbs.Count</td> <!-- Shows how many items are in the order -->
+                        <td>₱@order.TotalAmount.ToString("N2")</td> <!-- Shows the formatted total amount -->
+                        <td>@order.OrderStatus</td> <!-- Shows the current order status -->
+                        <td>@order.DateCreated.ToString("yyyy-MM-dd HH:mm")</td> <!-- Shows when the order was created -->
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="MyOrderDetails" asp-route-id="@order.OrdersId">View</a>
-                            <a class="btn btn-sm btn-outline-primary" asp-action="MyOrderEdit" asp-route-id="@order.OrdersId">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="MyOrderDetails" asp-route-id="@order.OrdersId">View</a> <!-- Opens the selected order details -->
+                            <a class="btn btn-sm btn-outline-primary" asp-action="MyOrderEdit" asp-route-id="@order.OrdersId">Edit</a> <!-- Opens the edit page for the selected order -->
+
                             <form asp-action="MyOrderDelete" asp-route-id="@order.OrdersId" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                @Html.AntiForgeryToken() <!-- Protects the delete form from CSRF -->
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button> <!-- Deletes the selected order -->
                             </form>
                         </td>
                     </tr>

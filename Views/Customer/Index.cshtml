@@ -1,21 +1,22 @@
 @model IEnumerable<Inventory_Order.Models.Database.CustomerTb>
 @{
+    // Sets the page title
     ViewData["Title"] = "Customers";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="page-title mb-0">Customers</h1>
-    <a class="btn btn-primary" asp-action="Create">Add customer</a>
+    <h1 class="page-title mb-0">Customers</h1> <!-- Page heading -->
 </div>
 
 <div class="panel">
     <div class="table-responsive">
-        <table class="table align-middle searchable-table">
+        <table class="table align-middle searchable-table"> <!-- Customer table -->
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>First Name</th>
                     <th>Last Name</th>
+                    <th>Username</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -23,25 +24,35 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr data-search-row data-name="@item.FirstName @item.LastName" data-status="@(item.IsActive ? "Active" : "Inactive")">
-                        <td>@item.CustomerId</td>
-                        <td>@item.FirstName</td>
-                        <td>@item.LastName</td>
+                    // Get the first active username linked to the customer, or show fallback text if none exists
+                    var username = item.UserTbs
+                        .Where(u => u.IsActive)
+                        .Select(u => u.Username)
+                        .FirstOrDefault() ?? "No account";
+
+                    <!-- Customer row with searchable name and status values -->
+                    <tr data-search-row
+                        data-name="@item.FirstName @item.LastName"
+                        data-status="@(item.IsActive ? "Active" : "Inactive")">
+                        <td>@item.CustomerId</td> <!-- Customer ID -->
+                        <td>@item.FirstName</td> <!-- First Name -->
+                        <td>@item.LastName</td> <!-- Last Name -->
+                        <td>@username</td> <!-- Username -->
                         <td>
                             @if (item.IsActive)
                             {
-                                <span class="badge text-bg-success">Active</span>
+                                <span class="badge text-bg-success">Active</span> <!-- Active status badge -->
                             }
                             else
                             {
-                                <span class="badge text-bg-secondary">Inactive</span>
+                                <span class="badge text-bg-secondary">Inactive</span> <!-- Inactive status badge -->
                             }
                         </td>
                         <td class="text-end">
-                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CustomerId">Edit</a>
-                            <form asp-action="Delete" asp-route-id="@item.CustomerId" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.CustomerId">Edit</a> <!-- Edit customer -->
+                            <form asp-action="Delete" asp-route-id="@item.CustomerId" method="post" class="d-inline"> <!-- Delete customer form -->
+                                @Html.AntiForgeryToken() <!-- Security token -->
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button> <!-- Delete button -->
                             </form>
                         </td>
                     </tr>

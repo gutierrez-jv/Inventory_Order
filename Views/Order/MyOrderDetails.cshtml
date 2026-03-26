@@ -1,21 +1,23 @@
 @model Inventory_Order.Models.Database.OrderTb
 @{
-    ViewData["Title"] = "My Order Details";
+    ViewData["Title"] = "My Order Details"; // Sets the page title
 }
 
-<h1 class="page-title">My Order #@Model.OrdersId</h1>
+<h1 class="page-title">My Order #@Model.OrdersId</h1> <!-- Shows the current order number -->
 
 <div class="panel">
     <div class="grid-2">
-        <div><strong>Status:</strong> @Model.OrderStatus</div>
-        <div><strong>Date Created:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div>
-        <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div>
-        <div><strong>Total Items:</strong> @Model.OrderItemTbs.Count</div>
+        <div><strong>Status:</strong> @Model.OrderStatus</div> <!-- Displays the order status -->
+        <div><strong>Date Created:</strong> @Model.DateCreated.ToString("yyyy-MM-dd HH:mm")</div> <!-- Displays when the order was created -->
+        <div><strong>Total:</strong> ₱@Model.TotalAmount.ToString("N2")</div> <!-- Displays the total order amount -->
+        <div><strong>Total Items:</strong> @Model.OrderItemTbs.Count</div> <!-- Displays the total number of items -->
     </div>
 
-    <h5 class="mt-4">Items</h5>
+    <h5 class="mt-4">Items</h5> <!-- Section heading for ordered items -->
+
     <div class="table-responsive">
         <table class="table align-middle searchable-table">
+            <!-- Displays all items included in the order -->
             <thead>
                 <tr>
                     <th>Product</th>
@@ -28,15 +30,15 @@
                 @foreach (var item in Model.OrderItemTbs)
                 {
                     <tr data-search-row>
-                        <td>@(item.Products != null ? item.Products.Name : "Product #" + item.ProductsId)</td>
-                        <td>@item.Quantity</td>
-                        <td>₱@item.UnitPrice.ToString("N2")</td>
-                        <td>₱@item.LineTotal.ToString("N2")</td>
+                        <td>@(item.Products != null ? item.Products.Name : "Product #" + item.ProductsId)</td> <!-- Shows the product name or fallback product ID -->
+                        <td>@item.Quantity</td> <!-- Shows the ordered quantity -->
+                        <td>₱@item.UnitPrice.ToString("N2")</td> <!-- Shows the unit price -->
+                        <td>₱@item.LineTotal.ToString("N2")</td> <!-- Shows the line total for this item -->
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 
-    <a asp-action="MyOrders" class="btn btn-outline-secondary">Back</a>
+    <a asp-action="MyOrders" class="btn btn-outline-secondary">Back</a> <!-- Returns to the user's orders page -->
 </div>

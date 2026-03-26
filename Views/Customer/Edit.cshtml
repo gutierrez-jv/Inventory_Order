@@ -1,29 +1,32 @@
 @model Inventory_Order.Models.Database.CustomerTb
 @{
+    // Sets the page title
     ViewData["Title"] = "Edit Customer";
 }
 
-<h1 class="page-title">Edit customer</h1>
+<h1 class="page-title">Edit customer</h1> <!-- Page heading -->
 
 <form class="panel" asp-action="Edit" method="post">
-    @Html.AntiForgeryToken()
-    <input asp-for="CustomerId" type="hidden" />
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+    <!-- Sends form data to the Edit POST action -->
+    @Html.AntiForgeryToken() <!-- Security token -->
+    <input asp-for="CustomerId" type="hidden" /> <!-- Hidden field to keep the customer ID during form submission -->
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div> <!-- Shows model-level validation errors -->
 
     <div class="grid-2">
         <div>
-            <label asp-for="FirstName"></label>
-            <input asp-for="FirstName" class="form-control" />
-            <span asp-validation-for="FirstName" class="text-danger"></span>
+            <label asp-for="FirstName"></label> <!-- Label for First Name -->
+            <input asp-for="FirstName" class="form-control" /> <!-- First Name input -->
+            <span asp-validation-for="FirstName" class="text-danger"></span> <!-- Shows validation error -->
         </div>
         <div>
-            <label asp-for="LastName"></label>
-            <input asp-for="LastName" class="form-control" />
-            <span asp-validation-for="LastName" class="text-danger"></span>
+            <label asp-for="LastName"></label> <!-- Label for Last Name -->
+            <input asp-for="LastName" class="form-control" /> <!-- Last Name input -->
+            <span asp-validation-for="LastName" class="text-danger"></span> <!-- Shows validation error -->
         </div>
         <div>
-            <label asp-for="IsActive"></label>
+            <label asp-for="IsActive"></label> <!-- Label for active status -->
             <select asp-for="IsActive" class="form-select">
+                <!-- Dropdown for active/inactive status -->
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
             </select>
@@ -31,11 +34,11 @@
     </div>
 
     <div class="mt-4">
-        <button type="submit" class="btn btn-primary">Update customer</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update customer</button> <!-- Submit edited customer -->
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a> <!-- Return to customer list -->
     </div>
 </form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" /> <!-- Loads client-side validation scripts -->
 }

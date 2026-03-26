@@ -1,10 +1,16 @@
 @model Inventory_Order.ViewModels.Order.UpdateOrderRequestViewModel
 @using Microsoft.AspNetCore.Mvc.Rendering
 @{
+    // Sets the page title
     ViewData["Title"] = "Edit Order";
+
+    // Gets the customer dropdown items passed from the controller
     var customers = ViewBag.Customers as List<SelectListItem> ?? new List<SelectListItem>();
+
+    // Gets the product dropdown items passed from the controller
     var products = ViewBag.Products as List<SelectListItem> ?? new List<SelectListItem>();
 
+    // Ensures the form starts with at least one order item row
     if (Model.Items == null || Model.Items.Count == 0)
     {
         Model.Items = new List<Inventory_Order.ViewModels.Order.OrderItemRequestViewModel>
@@ -14,57 +20,58 @@
     }
 }
 
-<h1 class="page-title">Edit order</h1>
+<h1 class="page-title">Edit order</h1> <!-- Page heading -->
 
 <form asp-action="Edit" method="post" class="panel" id="edit-order-form">
-    @Html.AntiForgeryToken()
-    <input asp-for="OrdersId" type="hidden" />
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+    @Html.AntiForgeryToken() <!-- Security token to prevent CSRF attacks -->
+    <input asp-for="OrdersId" type="hidden" /> <!-- Keeps the order ID during form submission -->
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div> <!-- Shows model-level validation errors -->
 
     <div class="grid-2">
         <div>
-            <label asp-for="CustomersId">Customer</label>
-            <select asp-for="CustomersId" class="form-select" asp-items="customers"></select>
-            <span asp-validation-for="CustomersId" class="text-danger"></span>
+            <label asp-for="CustomersId">Customer</label> <!-- Customer label -->
+            <select asp-for="CustomersId" class="form-select" asp-items="customers"></select> <!-- Customer dropdown -->
+            <span asp-validation-for="CustomersId" class="text-danger"></span> <!-- Shows validation error -->
         </div>
         <div>
-            <label asp-for="OrderStatus">Order Status</label>
+            <label asp-for="OrderStatus">Order Status</label> <!-- Order status label -->
             <select asp-for="OrderStatus" class="form-select">
                 <option value="Pending">Pending</option>
                 <option value="Completed">Completed</option>
                 <option value="Cancelled">Cancelled</option>
-            </select>
-            <span asp-validation-for="OrderStatus" class="text-danger"></span>
+            </select> <!-- Lets the user choose the status -->
+            <span asp-validation-for="OrderStatus" class="text-danger"></span> <!-- Shows validation error -->
         </div>
     </div>
 
-    <h5 class="mt-4">Order items</h5>
+    <h5 class="mt-4">Order items</h5> <!-- Section heading -->
+
     <div id="items-container">
         @for (var i = 0; i < Model.Items.Count; i++)
         {
             <div class="item-row mb-3">
                 <div class="d-flex justify-content-end mb-2">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-item" aria-label="Remove item">×</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-item" aria-label="Remove item">×</button> <!-- Removes this item row -->
                 </div>
                 <div class="grid-2">
                     <div>
-                        <label>Product</label>
+                        <label>Product</label> <!-- Product label -->
                         <select name="Items[@i].ProductsId" class="form-select" required>
                             @foreach (var product in products)
                             {
                                 if (product.Value == Model.Items[i].ProductsId.ToString())
                                 {
-                                    <option selected value="@product.Value">@product.Text</option>
+                                    <option selected value="@product.Value">@product.Text</option> <!-- Keeps selected product -->
                                 }
                                 else
                                 {
-                                    <option value="@product.Value">@product.Text</option>
+                                    <option value="@product.Value">@product.Text</option> <!-- Normal product option -->
                                 }
                             }
                         </select>
                     </div>
                     <div>
-                        <label>Quantity</label>
+                        <label>Quantity</label> <!-- Quantity label -->
                         <input name="Items[@i].Quantity" type="number" class="form-control" min="1" value="@Model.Items[i].Quantity" required />
                     </div>
                 </div>
@@ -73,15 +80,16 @@
     </div>
 
     <div class="d-flex gap-2 mt-3">
-        <button type="button" class="btn btn-outline-primary" id="add-item">+ Add product</button>
-        <button type="submit" class="btn btn-primary">Save changes</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        <button type="button" class="btn btn-outline-primary" id="add-item">+ Add product</button> <!-- Adds another item row -->
+        <button type="submit" class="btn btn-primary">Save changes</button> <!-- Submits the edited order -->
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a> <!-- Returns to order list -->
     </div>
 
-    <small class="text-muted d-block mt-3">Review items carefully before saving changes.</small>
+    <small class="text-muted d-block mt-3">Review items carefully before saving changes.</small> <!-- Reminder text -->
 </form>
 
 <template id="item-template">
+    <!-- Hidden template used to create new editable item rows -->
     <div class="item-row mb-3">
         <div class="d-flex justify-content-end mb-2">
             <button type="button" class="btn btn-outline-danger btn-sm remove-item" aria-label="Remove item">×</button>
@@ -92,7 +100,7 @@
                 <select name="Items[__index__].ProductsId" class="form-select" required>
                     @foreach (var product in products)
                     {
-                        <option value="@product.Value">@product.Text</option>
+                        <option value="@product.Value">@product.Text</option> <!-- Product options for new rows -->
                     }
                 </select>
             </div>
@@ -105,20 +113,24 @@
 </template>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" /> <!-- Loads client-side validation scripts -->
+
     <script>
-        const container = document.getElementById('items-container');
-        const button = document.getElementById('add-item');
-        const template = document.getElementById('item-template');
+        const container = document.getElementById('items-container'); // Container for order items
+        const button = document.getElementById('add-item'); // Add-item button
+        const template = document.getElementById('item-template'); // Hidden template
 
         function reindexItemNames() {
+            // Reassigns the correct indexes after removing rows so model binding still works
             const rows = container.querySelectorAll('.item-row');
             rows.forEach((row, index) => {
                 const product = row.querySelector('select');
                 const quantity = row.querySelector('input[type="number"]');
+
                 if (product) {
                     product.name = `Items[${index}].ProductsId`;
                 }
+
                 if (quantity) {
                     quantity.name = `Items[${index}].Quantity`;
                 }
@@ -126,32 +138,37 @@
         }
 
         function bindRemoveButtons() {
+            // Attaches remove behavior to all remove buttons
             const removeButtons = container.querySelectorAll('.remove-item');
+
             removeButtons.forEach(btn => {
                 btn.onclick = function () {
                     const rows = container.querySelectorAll('.item-row');
+
+                    // Prevents removing the last remaining item row
                     if (rows.length <= 1) {
                         return;
                     }
 
-                    const row = this.closest('.item-row');
+                    const row = this.closest('.item-row'); // Finds the row of the clicked button
                     if (row) {
-                        row.remove();
-                        reindexItemNames();
+                        row.remove(); // Removes the row
+                        reindexItemNames(); // Fixes input indexes after removal
                     }
                 };
             });
         }
 
         if (container && button && template) {
+            // Adds a new item row when the add button is clicked
             button.addEventListener('click', function () {
-                const index = container.querySelectorAll('.item-row').length;
-                const html = template.innerHTML.replaceAll('__index__', index);
-                container.insertAdjacentHTML('beforeend', html);
-                bindRemoveButtons();
+                const index = container.querySelectorAll('.item-row').length; // Gets next row index
+                const html = template.innerHTML.replaceAll('__index__', index); // Replaces placeholder with real index
+                container.insertAdjacentHTML('beforeend', html); // Appends new row
+                bindRemoveButtons(); // Rebind remove buttons for new row
             });
 
-            bindRemoveButtons();
+            bindRemoveButtons(); // Binds remove buttons for existing rows
         }
     </script>
 }

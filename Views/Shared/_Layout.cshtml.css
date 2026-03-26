@@ -1,48 +1,49 @@
 ﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+for details on configuring this project to bundle and minify static web assets. */ /* Default ASP.NET comment about bundling and minification */
 
 a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+    white-space: normal; /* Allows the brand text to wrap if needed */
+    text-align: center; /* Centers the brand text */
+    word-break: break-all; /* Breaks long text so it fits within the container */
 }
 
 a {
-  color: #0077cc;
+    color: #0077cc; /* Sets the default link color */
 }
 
 .btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff; /* Sets the text color of primary buttons */
+    background-color: #1b6ec2; /* Sets the background color of primary buttons */
+    border-color: #1861ac; /* Sets the border color of primary buttons */
 }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+    color: #fff; /* Sets the text color of the active nav pill */
+    background-color: #1b6ec2; /* Sets the background color of the active nav pill */
+    border-color: #1861ac; /* Sets the border color of the active nav pill */
 }
 
 .border-top {
-  border-top: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5; /* Adds a light top border */
 }
+
 .border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5; /* Adds a light bottom border */
 }
 
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); /* Applies a soft shadow effect */
 }
 
 button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
+    font-size: 1rem; /* Sets the font size of the cookie policy button */
+    line-height: inherit; /* Uses the inherited line height */
 }
 
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+    position: absolute; /* Positions the footer absolutely inside the page */
+    bottom: 0; /* Anchors the footer to the bottom */
+    width: 100%; /* Makes the footer span the full width */
+    white-space: nowrap; /* Prevents footer text from wrapping */
+    line-height: 60px; /* Sets the footer height through line spacing */
 }

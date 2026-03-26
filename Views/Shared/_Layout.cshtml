@@ -1,75 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Inventory.io</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Inventory_Order.styles.css" asp-append-version="true" />
+    <meta charset="utf-8" /> <!-- Sets the character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Makes the layout responsive on different screen sizes -->
+    <title>@ViewData["Title"] - Inventory.io</title> <!-- Displays the page title in the browser tab -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> <!-- Loads Bootstrap styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /> <!-- Loads the custom site stylesheet -->
+    <link rel="stylesheet" href="~/Inventory_Order.styles.css" asp-append-version="true" /> <!-- Loads project-specific compiled styles -->
 </head>
 <body>
     @{
-        var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
-        var isAdmin = User?.IsInRole("Admin") ?? false;
-        var isCustomer = User?.IsInRole("Customer") ?? false;
-        var displayName = isAdmin ? "Admin" : User?.FindFirst("FirstName")?.Value ?? User?.Identity?.Name ?? "User";
-        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var isAuthenticated = User?.Identity?.IsAuthenticated ?? false; // Checks if a user is currently logged in
+        var isAdmin = User?.IsInRole("Admin") ?? false; // Checks if the logged-in user is an admin
+        var isCustomer = User?.IsInRole("Customer") ?? false; // Checks if the logged-in user is a customer
+        var displayName = isAdmin ? "Admin" : User?.FindFirst("FirstName")?.Value ?? User?.Identity?.Name ?? "User"; // Determines the name displayed in the navbar
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString(); // Gets the current controller name for active navigation highlighting
     }
 
     @if (isAuthenticated)
     {
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
             <div class="container-fluid">
-                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">Inventory.io</a>
+                <a class="navbar-brand fw-semibold" asp-controller="Home" asp-action="Index">Inventory.io</a> <!-- Links the brand name to the home page -->
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                    <span class="navbar-toggler-icon"></span> <!-- Shows the mobile navbar toggle icon -->
                 </button>
 
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         @if (isAdmin)
                         {
-                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li>
-                            <li class="nav-item"><a class="nav-link @(currentController == "Customer" ? "active" : "")" asp-controller="Customer" asp-action="Index">Customers</a></li>
-                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="Index">Orders</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Create">Add Product</a></li>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li> <!-- Opens the products page -->
+                            <li class="nav-item"><a class="nav-link @(currentController == "Customer" ? "active" : "")" asp-controller="Customer" asp-action="Index">Customers</a></li> <!-- Opens the customers page -->
+                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="Index">Orders</a></li> <!-- Opens the orders page -->
+                            <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Create">Add Product</a></li> <!-- Opens the add-product page -->
                         }
                         else if (isCustomer)
                         {
-                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li>
-                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="MyOrders">My Orders</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Order" asp-action="Create">Create Order</a></li>
+                            <li class="nav-item"><a class="nav-link @(currentController == "Product" ? "active" : "")" asp-controller="Product" asp-action="Index">Products</a></li> <!-- Opens the products page -->
+                            <li class="nav-item"><a class="nav-link @(currentController == "Order" ? "active" : "")" asp-controller="Order" asp-action="MyOrders">My Orders</a></li> <!-- Opens the current user's orders -->
+                            <li class="nav-item"><a class="nav-link" asp-controller="Order" asp-action="Create">Create Order</a></li> <!-- Opens the create-order page -->
                         }
                     </ul>
 
                     <form class="d-flex gap-2 me-3" role="search" onsubmit="return false;">
-                        <input id="global-search" class="form-control form-control-sm" type="search" placeholder="Search table rows" aria-label="Search" />
+                        <input id="global-search" class="form-control form-control-sm" type="search" placeholder="Search table rows" aria-label="Search" /> <!-- Input for searching table content -->
                         <select id="global-search-field" class="form-select form-select-sm" style="min-width: 140px;">
-                            <option value="all">All</option>
-                            <option value="name">Name</option>
-                            <option value="category">Category</option>
-                            <option value="barcode">Barcode</option>
-                            <option value="status">Status</option>
+                            <option value="all">All</option> <!-- Searches across all available fields -->
+                            <option value="name">Name</option> <!-- Filters search by name -->
+                            <option value="category">Category</option> <!-- Filters search by category -->
+                            <option value="barcode">Barcode</option> <!-- Filters search by barcode -->
+                            <option value="status">Status</option> <!-- Filters search by status -->
                         </select>
                     </form>
 
                     <div class="d-flex align-items-center gap-3 text-white-50">
-                        <span class="small">@displayName</span>
-                        <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Logout">Log out</a>
+                        <span class="small">@displayName</span> <!-- Displays the logged-in user's name -->
+                        <a class="btn btn-sm btn-outline-light" asp-controller="Account" asp-action="Logout">Log out</a> <!-- Logs the user out of the system -->
                     </div>
                 </div>
             </div>
         </nav>
 
         <main class="container py-4">
-            @RenderBody()
+            @RenderBody() <!-- Renders the main content of the current page for authenticated users -->
         </main>
     }
     else
     {
         <main class="auth-shell container py-5">
-            @RenderBody()
+            @RenderBody() <!-- Renders the page content for guests or users on authentication pages -->
         </main>
     }
 
@@ -78,12 +79,12 @@
          data-error="@TempData["ErrorMessage"]"
          data-warning="@TempData["WarningMessage"]"
          data-info="@TempData["InfoMessage"]"
-         hidden></div>
+         hidden></div> <!-- Stores TempData messages for SweetAlert notifications -->
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/sweetalert2/sweetalert2.all.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script> <!-- Loads jQuery -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> <!-- Loads Bootstrap JavaScript -->
+    <script src="~/sweetalert2/sweetalert2.all.min.js"></script> <!-- Loads SweetAlert2 for popup messages -->
+    <script src="~/js/site.js" asp-append-version="true"></script> <!-- Loads the custom JavaScript file -->
+    @await RenderSectionAsync("Scripts", required: false) <!-- Renders additional page-specific scripts if available -->
 </body>
 </html>

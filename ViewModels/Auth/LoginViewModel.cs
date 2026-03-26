@@ -8,7 +8,7 @@ namespace Inventory_Order.ViewModels.Auth
         public string Username { get; set; } = string.Empty;
 
         [Required]
-        [DataType(DataType.Password)]
+        [DataType(DataType.Password)] // Masks input in forms
         public string Password { get; set; } = string.Empty;
     }
 }
